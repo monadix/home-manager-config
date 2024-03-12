@@ -21,6 +21,7 @@
     krita
     libreoffice
     obs-studio
+    obsidian
     openshot-qt
     qbittorrent
     scrot
@@ -93,10 +94,12 @@
 
       extensions = with pkgs.vscode-extensions; [
         tamasfe.even-better-toml
+        golang.go
         haskell.haskell
         bbenoist.nix
         arrterian.nix-env-selector
         rust-lang.rust-analyzer
+        ms-azuretools.vscode-docker
         asvetliakov.vscode-neovim
       ];
     };

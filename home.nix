@@ -52,8 +52,8 @@
   };
 
   programs = {
-  	git = {
-	  	enable = true;
+    git = {
+  	enable = true;
     	userName = "chell4";
     	userEmail = "arsenijalfeev@gmail.com";
     };

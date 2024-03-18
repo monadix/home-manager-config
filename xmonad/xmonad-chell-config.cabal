@@ -23,7 +23,7 @@ executable xmonad-chell-config
     -- other-extensions:
     build-depends:    
         base, 
-        xmonad,
+        xmonad ^>= 0.17.2,
         xmonad-contrib,
         random
     hs-source-dirs:   app

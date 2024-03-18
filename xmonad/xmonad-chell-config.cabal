@@ -22,7 +22,7 @@ executable xmonad-chell-config
     -- other-modules:
     -- other-extensions:
     build-depends:    
-        base ^>=4.17.2.0,
+        base, 
         xmonad,
         xmonad-contrib,
         random

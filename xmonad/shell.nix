@@ -2,7 +2,7 @@
 pkgs.mkShell {
   name = "xmonad-dev-shell";
   shellHook = ''
-    cabal build
+    code .
   '';
   packages = with pkgs; [
     xorg.libX11
@@ -10,5 +10,7 @@ pkgs.mkShell {
     xorg.libXinerama
     xorg.libXScrnSaver
     xorg.libXext
+
+    ghc
   ];
 }

@@ -1,7 +1,6 @@
 import XMonad
 
 import XMonad.Util.EZConfig
-import XMonad.Util.Ungrab
 
 import System.Random
 
@@ -34,11 +33,16 @@ main = xmonad $ def
 
   `additionalKeys`
   [ ((myModMask, xK_b)  , spawn "brave")
+
   , ((shiftMask, xK_Alt_L), changeKeyboardLayout)
   , ((mod1Mask, xK_Shift_L), changeKeyboardLayout)
+
   , ((noModMask, xK_Print), do 
       str <- take 32 . filter isAlphaNum . randoms @Char <$> newStdGen
       unGrab <* spawn ("scrot -s /home/chell/Pictures/Screenshots/" ++ str ++ ".png"))
+
   , ((myModMask, xK_z), spawn "shutdown -h now")
   , ((myModMask, xK_x), spawn "reboot")
+
+  , ((myModMask, xK_p), spawn "SHELL=bash dmenu_run")
   ]

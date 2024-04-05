@@ -1,4 +1,9 @@
-{ config, pkgs, lib, ... }:
+{ config
+, pkgs
+, lib
+, vscode-extensions
+,
+... }:
 
 {
   home.username = "chell";
@@ -8,7 +13,6 @@
 
   home.packages = with pkgs; [
     brave
-    codeium
     discord
     dmenu
     docker
@@ -107,7 +111,8 @@
       enableUpdateCheck = false;
       enableExtensionUpdateCheck = false;
 
-      extensions = with pkgs.vscode-extensions; [
+      extensions = with vscode-extension.vscode-marketplace; [
+        codeium.codeium
         tamasfe.even-better-toml
         golang.go
         haskell.haskell

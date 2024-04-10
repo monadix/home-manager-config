@@ -111,8 +111,15 @@
       enableUpdateCheck = false;
       enableExtensionUpdateCheck = false;
 
-      extensions = with vscode-extension.vscode-marketplace; [
-        codeium.codeium
+      userSettings ={
+        "extensions.autoCheckUpdates" = false;
+        "update.mode" = "none";
+        "extensions.experimental.affinity" = {
+          "asvetliakov.vscode-neovim" = 1;
+        };
+      };
+
+      extensions = with vscode-extensions.vscode-marketplace; [
         tamasfe.even-better-toml
         golang.go
         haskell.haskell

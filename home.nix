@@ -126,6 +126,7 @@
         bbenoist.nix
         arrterian.nix-env-selector
         rust-lang.rust-analyzer
+        ms-python.python
         ms-azuretools.vscode-docker
         asvetliakov.vscode-neovim
       ];

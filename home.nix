@@ -117,6 +117,7 @@
         "extensions.experimental.affinity" = {
           "asvetliakov.vscode-neovim" = 1;
         };
+        "git.openRepositoryInParentFolders" = "always";
       };
 
       extensions = with vscode-extensions.vscode-marketplace; [

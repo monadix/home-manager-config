@@ -117,6 +117,7 @@
         "extensions.experimental.affinity" = {
           "asvetliakov.vscode-neovim" = 1;
         };
+        "git.openRepositoryInParentFolders" = "always";
       };
 
       extensions = with vscode-extensions.vscode-marketplace; [
@@ -126,6 +127,7 @@
         bbenoist.nix
         arrterian.nix-env-selector
         rust-lang.rust-analyzer
+        ms-python.python
         ms-azuretools.vscode-docker
         asvetliakov.vscode-neovim
       ];

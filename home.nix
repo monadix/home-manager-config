@@ -112,6 +112,7 @@
       enableExtensionUpdateCheck = false;
 
       userSettings ={
+        "editor.lineNumbers" = "relative";
         "extensions.autoCheckUpdates" = false;
         "update.mode" = "none";
         "extensions.experimental.affinity" = {

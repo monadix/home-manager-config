@@ -17,6 +17,7 @@
     dmenu
     docker
     droidcam
+    element-desktop
     evince
     firefox
     gimp
@@ -33,6 +34,7 @@
     telegram-desktop
     todoist-electron
     vlc
+    xorg.xgamma
   ];
 
   nixpkgs = {
@@ -46,7 +48,7 @@
     windowManager.xmonad = {
       enable = true;
       enableContribAndExtras = true;
-      config = ./xmonad/app/Main.hs;
+      config = ./xmonad/xmonad.hs;
       extraPackages = hPkgs: with hPkgs; [
         random
         dbus
@@ -125,6 +127,7 @@
         tamasfe.even-better-toml
         golang.go
         haskell.haskell
+        justusadam.language-haskell
         bbenoist.nix
         arrterian.nix-env-selector
         rust-lang.rust-analyzer

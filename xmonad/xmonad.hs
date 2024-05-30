@@ -7,9 +7,11 @@ import XMonad.Util.Ungrab
 import System.Random
 
 import Data.Char
+import Data.IORef
 import Data.Maybe
 import Data.Ord
-import Data.IORef
+import Data.Time.Clock
+import Data.Time.Format.ISO8601
 
 import qualified GHC.IO as IO
 
@@ -61,8 +63,8 @@ main = xmonad $ def
   , ((mod1Mask, xK_Shift_L), changeKeyboardLayout)
 
   , ((noModMask, xK_Print), do 
-      str <- take 32 . filter isAlphaNum . randoms @Char <$> newStdGen
-      unGrab <* spawn ("scrot -s /home/chell/Pictures/Screenshots/" ++ str ++ ".png"))
+      time <- liftIO getCurrentTime
+      unGrab <* spawn ("scrot -fs ~/Pictures/Screenshots/" ++ iso8601Show time ++ ".png"))
 
   , ((myModMask .|. shiftMask, xK_z), spawn "shutdown -h now")
   , ((myModMask .|. shiftMask, xK_x), spawn "reboot")

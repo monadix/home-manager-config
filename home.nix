@@ -50,10 +50,11 @@
       enableContribAndExtras = true;
       config = ./xmonad/xmonad.hs;
       extraPackages = hPkgs: with hPkgs; [
-        random
         dbus
         List
         monad-logger
+        random
+        time
       ];
     };
   };

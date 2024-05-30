@@ -36,8 +36,8 @@ currentScreenBrightness = IO.unsafePerformIO $ newIORef 1
 changeBrightness :: Float -> X ()
 changeBrightness delta = do
   brightness <- liftIO $ readIORef currentScreenBrightness
-  liftIO $ modifyIORef' currentScreenBrightness (clamp (0.1, 10) . (+delta))
-  spawn $ "xgamma -gamma " ++ show (clamp (0.1, 10) $ brightness + delta)
+  liftIO $ modifyIORef' currentScreenBrightness (+delta)
+  spawn $ "xrandr --output eDP-1 --brightness " ++ show (brightness + delta) -- TODO won't work for devices other than my laptop, fix
 
 
 myModMask :: KeyMask
@@ -74,5 +74,5 @@ main = xmonad $ def
   , ((noModMask, brightnessUpKey), changeBrightness 0.1)
   , ((noModMask, brightnessDownKey), changeBrightness (-0.1))
 
-  , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.5 && xset dpms force off")
+  , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.2 && xset dpms force off")
   ]

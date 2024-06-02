@@ -34,7 +34,7 @@
     telegram-desktop
     todoist-electron
     vlc
-    xorg.xgamma
+    xorg.libXcomposite
   ];
 
   nixpkgs = {

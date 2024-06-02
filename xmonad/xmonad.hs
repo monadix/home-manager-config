@@ -1,5 +1,5 @@
 import XMonad
-
+import XMonad.Hooks.EwmhDesktops
 import XMonad.Util.EZConfig
 import XMonad.Util.Parser
 import XMonad.Util.Ungrab
@@ -43,7 +43,7 @@ changeBrightness delta = do
 myModMask :: KeyMask
 myModMask = mod4Mask
 
-main = xmonad $ def
+main = xmonad . ewmh $ def
   { modMask = myModMask
   , terminal = "kitty"
   , focusedBorderColor = "#ffffff"}

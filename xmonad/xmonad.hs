@@ -64,7 +64,7 @@ main = xmonad . ewmh $ def
 
   , ((noModMask, xK_Print), do 
       time <- liftIO getCurrentTime
-      unGrab <* spawn ("scrot -fs ~/Pictures/Screenshots/" ++ iso8601Show time ++ ".png"))
+      unGrab <* spawn ("flameshot gui"))
 
   , ((myModMask .|. shiftMask, xK_z), spawn "shutdown -h now")
   , ((myModMask .|. shiftMask, xK_x), spawn "reboot")

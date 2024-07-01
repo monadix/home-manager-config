@@ -22,7 +22,10 @@
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 
-        modules = [ ./home.nix ./flameshot.nix ];
+        modules = [ 
+          ./home.nix 
+          ./modules
+          ];
 
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix

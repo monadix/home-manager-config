@@ -13,6 +13,8 @@
         uiColor = "#FFFFFF";
         contrastUiColor = "#000000";
 
+        showHelp = false;
+
         filenamePattern = "%F_%T";
       };
     };

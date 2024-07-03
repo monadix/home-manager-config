@@ -20,7 +20,6 @@
     gimp
     htop
     jetbrains.idea-community
-    kitty
     krita
     libreoffice
     obs-studio

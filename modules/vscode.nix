@@ -15,6 +15,7 @@
         "asvetliakov.vscode-neovim" = 1;
       };
       "git.openRepositoryInParentFolders" = "always";
+      "workbench.colorTheme" = "Kimbie Dark";
     };
 
     extensions = with vscode-extensions.vscode-marketplace; [

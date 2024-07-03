@@ -14,6 +14,7 @@
         contrastUiColor = "#000000";
 
         showHelp = false;
+        showSidePanelButton = false;
 
         filenamePattern = "%F_%T";
       };

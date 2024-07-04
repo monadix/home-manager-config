@@ -9,5 +9,6 @@
     ./tmux.nix
     ./vscode.nix
     ./xsession
+    ./yazi
   ];
 }

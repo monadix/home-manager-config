@@ -38,7 +38,16 @@
       allowUnfree = true;
     };
   };
-  
+
+  gtk = {
+    enable = true;
+
+    theme = {
+      package = pkgs.nordic;
+      name = "Nordic";
+    };
+  };
+
   xdg.mimeApps.defaultApplications = {
     
   };

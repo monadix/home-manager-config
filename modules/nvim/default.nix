@@ -14,6 +14,13 @@
       xclip
     ];
 
+    plugins = with pkgs.vimPlugins; [
+      {
+        plugin = nord-nvim;
+        config = "colorscheme nord";
+      }
+    ];
+
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;

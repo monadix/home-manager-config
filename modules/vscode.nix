@@ -15,7 +15,7 @@
         "asvetliakov.vscode-neovim" = 1;
       };
       "git.openRepositoryInParentFolders" = "always";
-      "workbench.colorTheme" = "Kimbie Dark";
+      "workbench.colorTheme" = "Nord";
     };
 
     extensions = with vscode-extensions.vscode-marketplace; [
@@ -25,6 +25,7 @@
       justusadam.language-haskell
       bbenoist.nix
       arrterian.nix-env-selector
+      arcticicestudio.nord-visual-studio-code
       rust-lang.rust-analyzer
       ms-python.python
       asvetliakov.vscode-neovim

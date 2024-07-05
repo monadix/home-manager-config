@@ -1,7 +1,4 @@
-{ config
-, pkgs
-, lib
-, vscode-extensions
+{ pkgs
 ,
 ... }:
 
@@ -23,7 +20,6 @@
     gimp
     htop
     jetbrains.idea-community
-    kitty
     krita
     libreoffice
     obs-studio
@@ -42,99 +38,13 @@
       allowUnfree = true;
     };
   };
-  
-  xsession = {
+
+  gtk = {
     enable = true;
-    windowManager.xmonad = {
-      enable = true;
-      enableContribAndExtras = true;
-      config = ./xmonad/xmonad.hs;
-      extraPackages = hPkgs: with hPkgs; [
-        dbus
-        List
-        monad-logger
-        random
-        time
-      ];
-    };
-  };
 
-  programs = {
-    git = {
-  	enable = true;
-    	userName = "chell4";
-    	userEmail = "arsenijalfeev@gmail.com";
-    };
-    
-    gh = {
-      enable = true;
-    };
-
-    nushell = {
-      enable = true;
-    };
-
-    carapace = {
-      enable = true;
-      enableNushellIntegration = true;
-    };
-
-    starship = {
-      enable = true;
-      settings.add_newline = true;
-    };
-
-    tmux = {
-      enable = true;
-      extraConfig = ''
-        set-option -g prefix C-q
-        set -g mouse on
-      '';
-    };
-
-    neovim = 
-    let 
-      toLua = str: "lua << EOF\n${str}\nEOF\n";
-      toLuaFile = file: toLua (builtins.readFile file);
-    in {
-      enable = true;
-      
-      extraLuaConfig = builtins.readFile ./nvim/options.lua;
-      extraPackages = with pkgs; [
-        xclip
-      ];
-
-      viAlias = true;
-      vimAlias = true;
-			vimdiffAlias = true;
-    };
-
-    vscode = rec {
-      enable = true;
-      enableUpdateCheck = false;
-      enableExtensionUpdateCheck = false;
-
-      userSettings ={
-        "editor.lineNumbers" = "relative";
-        "extensions.autoCheckUpdates" = false;
-        "update.mode" = "none";
-        "extensions.experimental.affinity" = {
-          "asvetliakov.vscode-neovim" = 1;
-        };
-        "git.openRepositoryInParentFolders" = "always";
-      };
-
-      extensions = with vscode-extensions.vscode-marketplace; [
-        tamasfe.even-better-toml
-        golang.go
-        haskell.haskell
-        justusadam.language-haskell
-        bbenoist.nix
-        arrterian.nix-env-selector
-        rust-lang.rust-analyzer
-        ms-python.python
-        asvetliakov.vscode-neovim
-      ];
+    theme = {
+      package = pkgs.nordic;
+      name = "Nordic";
     };
   };
 

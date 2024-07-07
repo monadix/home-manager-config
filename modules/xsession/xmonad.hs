@@ -2,6 +2,7 @@ import XMonad
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Util.EZConfig
 import XMonad.Util.Parser
+import XMonad.Util.SpawnOnce
 import XMonad.Util.Ungrab
 
 import System.Random
@@ -40,13 +41,20 @@ changeBrightness delta = do
   spawn $ "xrandr --output eDP-1 --brightness " ++ show (brightness + delta) -- TODO won't work for devices other than my laptop, fix
 
 
+myStartupHook :: X ()
+myStartupHook = do 
+  spawnOnce "feh --bg-fill --no-fehbg ~/.wallpapers/nixos-nord-dark.png"
+
+
 myModMask :: KeyMask
 myModMask = mod4Mask
 
 main = xmonad . ewmh $ def
   { modMask = myModMask
   , terminal = "kitty"
-  , focusedBorderColor = "#ffffff"}
+  , focusedBorderColor = "#ffffff"
+  , startupHook = myStartupHook
+  }
 
   `additionalKeys`
   let 

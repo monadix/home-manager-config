@@ -16,6 +16,7 @@
     droidcam
     element-desktop
     evince
+    feh
     firefox
     gimp
     htop

@@ -27,6 +27,9 @@
       arrterian.nix-env-selector
       arcticicestudio.nord-visual-studio-code
       rust-lang.rust-analyzer
+      ms-vscode-remote.remote-containers
+      ms-vscode-remote.remote-ssh
+      ms-vscode-remote.remote-ssh-edit
       ms-python.python
       asvetliakov.vscode-neovim
     ];

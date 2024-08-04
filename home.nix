@@ -32,6 +32,7 @@
     todoist-electron
     vlc
     xorg.libXcomposite
+    zoom-us
   ];
 
   nixpkgs = {

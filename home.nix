@@ -33,7 +33,13 @@
     vlc
     xorg.libXcomposite
     zoom-us
+
+    # fonts
+    corefonts
+    vistafonts
   ];
+
+  fonts.fontconfig.enable = true;
 
   nixpkgs = {
     config = {

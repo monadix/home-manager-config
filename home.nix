@@ -31,6 +31,7 @@
     telegram-desktop
     todoist-electron
     vlc
+    wine
     xorg.libXcomposite
     zoom-us
 

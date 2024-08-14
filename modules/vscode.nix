@@ -23,6 +23,7 @@
       golang.go
       haskell.haskell
       justusadam.language-haskell
+      ms-vscode.makefile-tools
       bbenoist.nix
       arrterian.nix-env-selector
       arcticicestudio.nord-visual-studio-code

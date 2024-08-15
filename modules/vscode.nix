@@ -1,4 +1,5 @@
-{ vscode-extensions
+{ pkgs
+, vscode-extensions
 ,
 ... }:
 {
@@ -6,6 +7,8 @@
     enable = true;
     enableUpdateCheck = false;
     enableExtensionUpdateCheck = false;
+
+    package = pkgs.vscode-fhs;
 
     userSettings ={
       "editor.lineNumbers" = "relative";
@@ -19,6 +22,7 @@
     };
 
     extensions = with vscode-extensions.vscode-marketplace; [
+      codeium.codeium
       tamasfe.even-better-toml
       golang.go
       haskell.haskell

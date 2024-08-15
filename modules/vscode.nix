@@ -19,10 +19,13 @@
       };
       "git.openRepositoryInParentFolders" = "always";
       "workbench.colorTheme" = "Nord";
+      "codeium.enableConfig" = {
+        "*" = true;
+        "nix" = true;
+      };
     };
 
     extensions = with vscode-extensions.vscode-marketplace; [
-      codeium.codeium
       tamasfe.even-better-toml
       golang.go
       haskell.haskell

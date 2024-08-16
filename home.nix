@@ -1,4 +1,5 @@
 { pkgs
+, pkgsStable
 ,
 ... }:
 
@@ -30,6 +31,7 @@
     scrot
     telegram-desktop
     todoist-electron
+    pkgsStable.tor-browser
     vlc
     wine
     xorg.libXcomposite

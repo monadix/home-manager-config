@@ -34,6 +34,7 @@
       bbenoist.nix
       arrterian.nix-env-selector
       arcticicestudio.nord-visual-studio-code
+      peterj.proto
       rust-lang.rust-analyzer
       ms-vscode-remote.remote-containers
       ms-vscode-remote.remote-ssh

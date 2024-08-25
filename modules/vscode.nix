@@ -22,6 +22,7 @@
       "codeium.enableConfig" = {
         "*" = true;
         "nix" = true;
+        "properties" = true;
       };
     };
 

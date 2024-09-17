@@ -33,7 +33,7 @@
     todoist-electron
     pkgsStable.tor-browser
     vlc
-    wowPackages.stable
+    wineWowPackages.stable
     winetricks
     xorg.libXcomposite
     zoom-us

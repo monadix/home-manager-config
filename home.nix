@@ -34,6 +34,7 @@
     pkgsStable.tor-browser
     vlc
     wine
+    winetricks
     xorg.libXcomposite
     zoom-us
 

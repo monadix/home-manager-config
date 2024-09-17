@@ -33,7 +33,7 @@
     todoist-electron
     pkgsStable.tor-browser
     vlc
-    wine
+    wine64
     winetricks
     xorg.libXcomposite
     zoom-us

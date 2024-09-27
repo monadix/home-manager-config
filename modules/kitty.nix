@@ -3,7 +3,7 @@
   programs.kitty = {
     enable = true;
 
-    theme = "Nord";
+    themeFile = "Nord";
 
     settings = {
     };

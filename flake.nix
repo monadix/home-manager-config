@@ -15,14 +15,21 @@
       url = "github:nix-community/nix-vscode-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    mur = {
+      url = "github:monadix/mur";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.stable.follows = "nixpkgs-stable";
+    };
   };
 
-  outputs = { nixpkgs, nixpkgs-stable, home-manager, nix-vscode-extensions, ... }:
+  outputs = { nixpkgs, nixpkgs-stable, home-manager, nix-vscode-extensions, mur, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
       vscode-extensions = nix-vscode-extensions.extensions."${system}";
+      murPkgs = mur.packages.${system};
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -35,8 +42,7 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
         extraSpecialArgs = {
-          inherit vscode-extensions;
-          inherit pkgsStable;
+          inherit vscode-extensions pkgsStable murPkgs;
         };
       };
     };

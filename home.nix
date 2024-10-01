@@ -1,5 +1,6 @@
 { pkgs
 , pkgsStable
+, murPkgs
 ,
 ... }:
 
@@ -10,6 +11,7 @@
   home.stateVersion = "23.05";
 
   home.packages = with pkgs; [
+    (builtins.trace murPkgs murPkgs.ayugram-desktop)
     brave
     discord
     dmenu

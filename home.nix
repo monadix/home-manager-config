@@ -11,9 +11,9 @@
   home.stateVersion = "23.05";
 
   home.packages = with pkgs; [
-    (builtins.trace murPkgs murPkgs.ayugram-desktop)
+    murPkgs.ayugram-desktop
     brave
-    discord
+    #discord
     dmenu
     docker
     droidcam

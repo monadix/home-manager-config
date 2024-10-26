@@ -42,6 +42,7 @@
       ms-vscode-remote.remote-ssh-edit
       ms-python.python
       asvetliakov.vscode-neovim
+      rangav.vscode-thunder-client
     ];
   };
 }

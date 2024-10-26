@@ -33,7 +33,7 @@
     scrot
     telegram-desktop
     todoist-electron
-    pkgsStable.tor-browser
+    tor-browser
     vlc
     wineWowPackages.stable
     winetricks

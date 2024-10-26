@@ -1,5 +1,23 @@
 {
   "nodes": {
+    "ayugramDesktop": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1727464603,
+        "narHash": "sha256-NuUKRD2d+bAkDJO340Wno4TdFnuQDXqdCDcjEXiWK9U=",
+        "ref": "refs/heads/dev",
+        "rev": "87808ef3171cff1511d76329fb94597f02f49844",
+        "revCount": 18612,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/AyuGram/AyuGramDesktop"
+      },
+      "original": {
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/AyuGram/AyuGramDesktop"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -74,21 +92,20 @@
     },
     "mur": {
       "inputs": {
+        "ayugramDesktop": "ayugramDesktop",
         "flake-parts": "flake-parts",
         "nix-github-actions": "nix-github-actions",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs",
         "stable": [
           "nixpkgs-stable"
         ]
       },
       "locked": {
-        "lastModified": 1727774810,
-        "narHash": "sha256-Sd6hPuf2Gk4BPx6dlSetZPmBnjX9gs0EL1paazJIj8A=",
+        "lastModified": 1729503202,
+        "narHash": "sha256-E6TLfLk9HbWOBPFfhivmaxo3CyGE3dNfYaeN4Cz5DOc=",
         "owner": "monadix",
         "repo": "mur",
-        "rev": "580cc35d591c2fc716bec6444640e2ed019dcd3b",
+        "rev": "3f7e2ca4b1aabb529e7b8198af6cc059397c91d7",
         "type": "github"
       },
       "original": {
@@ -142,17 +159,17 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1729256560,
-        "narHash": "sha256-/uilDXvCIEs3C9l73JTACm4quuHUsIHcns1c+cHUJwA=",
-        "owner": "nixos",
+        "lastModified": 1727122398,
+        "narHash": "sha256-o8VBeCWHBxGd4kVMceIayf5GApqTavJbTa44Xcg5Rrk=",
+        "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "4c2fcb090b1f3e5b47eaa7bd33913b574a11e0a0",
+        "rev": "30439d93eb8b19861ccbe3e581abf97bdc91b093",
         "type": "github"
       },
       "original": {
-        "owner": "nixos",
-        "ref": "nixos-unstable",
+        "owner": "NixOS",
         "repo": "nixpkgs",
+        "rev": "30439d93eb8b19861ccbe3e581abf97bdc91b093",
         "type": "github"
       }
     },
@@ -184,12 +201,28 @@
         "type": "github"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1729256560,
+        "narHash": "sha256-/uilDXvCIEs3C9l73JTACm4quuHUsIHcns1c+cHUJwA=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "4c2fcb090b1f3e5b47eaa7bd33913b574a11e0a0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
         "mur": "mur",
         "nix-vscode-extensions": "nix-vscode-extensions",
-        "nixpkgs": "nixpkgs",
+        "nixpkgs": "nixpkgs_2",
         "nixpkgs-stable": "nixpkgs-stable"
       }
     },

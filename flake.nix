@@ -18,7 +18,7 @@
 
     mur = {
       url = "github:monadix/mur";
-      inputs.nixpkgs.follows = "nixpkgs";
+
       inputs.stable.follows = "nixpkgs-stable";
     };
   };

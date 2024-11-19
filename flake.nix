@@ -16,20 +16,25 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    mur = {
-      url = "github:monadix/mur";
+    #mur = {
+    #  url = "github:monadix/mur";
 
-      inputs.stable.follows = "nixpkgs-stable";
+    #  inputs.stable.follows = "nixpkgs-stable";
+    #};
+
+    ayugram-desktop = {
+      url = "github:/ayugram-port/ayugram-desktop/release?submodules=1";
     };
   };
 
-  outputs = { nixpkgs, nixpkgs-stable, home-manager, nix-vscode-extensions, mur, ... }:
+  outputs = { nixpkgs, nixpkgs-stable, home-manager, nix-vscode-extensions, ayugram-desktop, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
       vscode-extensions = nix-vscode-extensions.extensions."${system}";
-      murPkgs = mur.packages.${system};
+      #murPkgs = mur.packages.${system};
+      ayugramPkgs = ayugram-desktop.packages."${system}";
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -42,7 +47,7 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
         extraSpecialArgs = {
-          inherit vscode-extensions pkgsStable murPkgs;
+          inherit vscode-extensions pkgsStable ayugramPkgs;
         };
       };
     };

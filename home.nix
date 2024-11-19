@@ -1,6 +1,7 @@
 { pkgs
 , pkgsStable
 , murPkgs
+, ayugramPkgs
 ,
 ... }:
 
@@ -11,7 +12,8 @@
   home.stateVersion = "23.05";
 
   home.packages = with pkgs; [
-    murPkgs.ayugram-desktop
+    #murPkgs.ayugram-desktop
+    ayugramPkgs.ayugram-desktop
     brave
     #discord
     dmenu

@@ -23,6 +23,7 @@
         "*" = true;
         "nix" = true;
         "properties" = true;
+        "proto" = true;
       };
     };
 

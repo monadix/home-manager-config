@@ -6,6 +6,7 @@
     themeFile = "Nord";
 
     settings = {
+      enable_audio_bell = false;
     };
   };
 }

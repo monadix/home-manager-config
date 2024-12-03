@@ -1,6 +1,5 @@
 { pkgs
 , pkgsStable
-, murPkgs
 , ayugramPkgs
 ,
 ... }:
@@ -12,7 +11,6 @@
   home.stateVersion = "23.05";
 
   home.packages = with pkgs; [
-    #murPkgs.ayugram-desktop
     ayugramPkgs.ayugram-desktop
     brave
     #discord
@@ -24,6 +22,7 @@
     feh
     firefox
     gimp
+    gnumake
     htop
     jetbrains.idea-community
     krita
@@ -31,6 +30,7 @@
     obs-studio
     obsidian
     openshot-qt
+    pavucontrol
     qbittorrent
     scrot
     telegram-desktop

@@ -16,12 +16,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    #mur = {
-    #  url = "github:monadix/mur";
-
-    #  inputs.stable.follows = "nixpkgs-stable";
-    #};
-
     ayugram-desktop = {
       url = "github:/ayugram-port/ayugram-desktop/release?submodules=1";
     };
@@ -33,7 +27,6 @@
       pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
       vscode-extensions = nix-vscode-extensions.extensions."${system}";
-      #murPkgs = mur.packages.${system};
       ayugramPkgs = ayugram-desktop.packages."${system}";
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {

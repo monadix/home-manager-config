@@ -13,6 +13,7 @@
   home.packages = with pkgs; [
     ayugramPkgs.ayugram-desktop
     brave
+    code-cursor
     #discord
     dmenu
     docker

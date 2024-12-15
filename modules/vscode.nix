@@ -30,6 +30,7 @@
     extensions = with vscode-extensions.vscode-marketplace; [
       tamasfe.even-better-toml
       golang.go
+
       haskell.haskell
       justusadam.language-haskell
       ms-vscode.makefile-tools
@@ -43,6 +44,7 @@
       ms-vscode-remote.remote-ssh-edit
       ms-python.python
       asvetliakov.vscode-neovim
+      thenuprojectcontributors.vscode-nushell-lang
       rangav.vscode-thunder-client
     ];
   };

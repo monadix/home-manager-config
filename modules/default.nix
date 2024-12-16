@@ -6,6 +6,7 @@
     ./kitty.nix
     ./nvim
     ./shell
+    ./syncthing
     ./tmux.nix
     ./vscode.nix
     ./xsession

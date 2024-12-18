@@ -28,6 +28,7 @@
     jetbrains.idea-community
     krita
     libreoffice
+    mpv
     obs-studio
     obsidian
     openshot-qt

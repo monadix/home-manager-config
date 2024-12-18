@@ -1,4 +1,6 @@
-{ ... }:
+{ pkgs
+,
+... }:
 {
   xsession = {
     enable = true;
@@ -14,6 +16,11 @@
         time
       ];
     };
+  };
+
+  home.pointerCursor = {
+    package = pkgs.nordzy-cursor-theme;
+    name = "Nordzy-cursors";
   };
 
   home.file = {

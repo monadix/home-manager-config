@@ -52,7 +52,9 @@ myModMask = mod4Mask
 main = xmonad . ewmh $ def
   { modMask = myModMask
   , terminal = "kitty"
-  , focusedBorderColor = "#ffffff"
+  , normalBorderColor = "#4C566A"
+  , focusedBorderColor = "#D8DEE9"
+  , borderWidth = 1
   , startupHook = myStartupHook
   }
 

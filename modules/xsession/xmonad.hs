@@ -85,4 +85,5 @@ main = xmonad . ewmh $ def
   , ((noModMask, brightnessDownKey), changeBrightness (-0.1))
 
   , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.2 && xset dpms force off")
+  , ((myModMask .|. shiftMask, xK_l), spawn "xautolock -locknow")
   ]

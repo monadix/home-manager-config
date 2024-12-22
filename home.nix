@@ -42,6 +42,7 @@
     wineWowPackages.stable
     winetricks
     xorg.libXcomposite
+    xautolock
     zoom-us
 
     # fonts

@@ -18,6 +18,18 @@
     };
   };
 
+  services = {
+    xscreensaver = {
+      enable = true;
+    };
+
+    screen-locker = {
+      enable = true;
+      lockCmd = "xscreensaver-command --lock";
+      xautolock.enable = true;
+    };
+  };
+
   home.pointerCursor = {
     package = pkgs.nordzy-cursor-theme;
     name = "Nordzy-cursors";
@@ -27,6 +39,15 @@
     ".wallpapers" = {
       source = ./wallpapers;
       recursive = true;
+    };
+
+    ".screensaver-imgs" = {
+      source = ./screensaver-imgs;
+      recursive = true;
+    };
+
+    ".xscreensaver" = {
+      source = ./xscreensaver;
     };
   };
 }

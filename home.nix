@@ -1,6 +1,5 @@
 { pkgs
 , pkgsStable
-, ayugramPkgs
 ,
 ... }:
 
@@ -11,7 +10,7 @@
   home.stateVersion = "23.05";
 
   home.packages = with pkgs; [
-    ayugramPkgs.ayugram-desktop
+    ayugram-desktop
     brave
     code-cursor
     #discord

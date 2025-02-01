@@ -32,6 +32,7 @@
     obsidian
     openshot-qt
     pavucontrol
+    postman
     qbittorrent
     scrot
     telegram-desktop

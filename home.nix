@@ -30,7 +30,7 @@
     mpv
     obs-studio
     obsidian
-    openshot-qt
+    pkgsStable.openshot-qt
     pavucontrol
     postman
     qbittorrent

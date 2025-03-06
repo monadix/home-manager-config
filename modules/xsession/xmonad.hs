@@ -30,15 +30,9 @@ changeKeyboardLayout = do
   liftIO $ modifyIORef' currentKeyboardLayout ((`mod` length keyboardLayouts) . succ)
 
 
-currentScreenBrightness :: IORef Float
-currentScreenBrightness = IO.unsafePerformIO $ newIORef 1
-{-# NOINLINE currentScreenBrightness #-}
-
 changeBrightness :: Float -> X ()
 changeBrightness delta = do
-  brightness <- liftIO $ readIORef currentScreenBrightness
-  liftIO $ modifyIORef' currentScreenBrightness (+delta)
-  spawn $ "xrandr --output eDP-1 --brightness " ++ show (brightness + delta) -- TODO won't work for devices other than my laptop, fix
+  spawn $ "xbacklight -inc " ++ show delta 
 
 
 myStartupHook :: X ()
@@ -81,8 +75,8 @@ main = xmonad . ewmh $ def
 
   , ((myModMask, xK_p), spawn "SHELL=bash dmenu_run")
 
-  , ((noModMask, brightnessUpKey), changeBrightness 0.1)
-  , ((noModMask, brightnessDownKey), changeBrightness (-0.1))
+  , ((noModMask, brightnessUpKey), changeBrightness 1)
+  , ((noModMask, brightnessDownKey), changeBrightness (-1))
 
   , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.2 && xset dpms force off")
   , ((myModMask .|. shiftMask, xK_l), spawn "xautolock -locknow")

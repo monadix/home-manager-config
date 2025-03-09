@@ -1,5 +1,4 @@
 { pkgs
-, vscode-extensions
 ,
 ... }:
 {
@@ -30,7 +29,7 @@
         };
       };
 
-      extensions = with vscode-extensions.vscode-marketplace; [
+      extensions = with pkgs.vscode-marketplace; [
         tamasfe.even-better-toml
         golang.go
 

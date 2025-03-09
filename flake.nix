@@ -23,7 +23,6 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
-      vscode-extensions = nix-vscode-extensions.extensions."${system}";
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -36,7 +35,7 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
         extraSpecialArgs = {
-          inherit vscode-extensions pkgsStable;
+          inherit nix-vscode-extensions pkgsStable;
         };
       };
     };

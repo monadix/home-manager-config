@@ -1,5 +1,6 @@
 { pkgs
 , pkgsStable
+, nix-vscode-extensions
 ,
 ... }:
 
@@ -60,6 +61,10 @@
         "jitsi-meet-1.0.8043"
       ];
     };
+
+    overlays = [
+      nix-vscode-extensions.overlays.default
+    ];
   };
 
   gtk = {

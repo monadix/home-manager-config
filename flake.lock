@@ -75,6 +75,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-cursor-47-8": {
+      "locked": {
+        "lastModified": 1743120401,
+        "narHash": "sha256-pwrebfCTS1wF12L8ez3qGcaOm1zrPq31N5NMblURsbs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "71a1c01a66bbf6b4c98e4cfb97801de4b236a807",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "pull/393609/head",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1717179513,
@@ -96,6 +112,7 @@
         "home-manager": "home-manager",
         "nix-vscode-extensions": "nix-vscode-extensions",
         "nixpkgs": "nixpkgs",
+        "nixpkgs-cursor-47-8": "nixpkgs-cursor-47-8",
         "nixpkgs-stable": "nixpkgs-stable"
       }
     },

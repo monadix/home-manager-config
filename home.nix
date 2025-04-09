@@ -66,6 +66,12 @@
       nix-vscode-extensions.overlays.default
     ];
   };
+  
+  services.home-manager.autoExpire = {
+    enable = true;
+    frequency = "daily";
+    timestamp = "-6 months";
+  };
 
   gtk = {
     enable = true;

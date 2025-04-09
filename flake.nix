@@ -6,8 +6,6 @@
 
     nixpkgs-stable.url = "github:NixOS/nixpkgs/24.05";
 
-    nixpkgs-cursor-47-8.url = "github:NixOS/nixpkgs/pull/393609/head";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -20,17 +18,11 @@
 
   };
 
-  outputs = { nixpkgs, nixpkgs-stable, nixpkgs-cursor-47-8, home-manager, nix-vscode-extensions, ... }:
+  outputs = { nixpkgs, nixpkgs-stable, home-manager, nix-vscode-extensions, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system}.extend (final: prev: {
-        code-cursor = pkgsCursor-47-8.code-cursor;
-      });
+      pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
-      pkgsCursor-47-8 = import nixpkgs-cursor-47-8 {
-        inherit system;
-        config.allowUnfree = true;
-      };
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;

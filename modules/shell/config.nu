@@ -70,3 +70,7 @@ $env.config.color_config = {
 $env.config.show_banner = false
 
 $env.config.edit_mode = "vi"
+
+const pi = 3.1415926535897932
+
+const exp = 2.7182818284590452

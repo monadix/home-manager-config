@@ -92,12 +92,35 @@
     };
   };
 
-  xdg.mimeApps.defaultApplications = {
-    
+  xdg = {
+    portal = {
+      enable = true;
+      xdgOpenUsePortal = true;
+
+      config = {
+        common = {
+          default = "*";
+          "org.freedesktop.impl.portal.FileChooser" = [ "termfilechooser" ];
+        };
+      };
+
+      extraPortals = with pkgs; [
+        xdg-desktop-portal-termfilechooser
+      ];
+    };
+
+    mimeApps.defaultApplications = {
+    };
   };
 
   home.file = {
-    
+    ".config/xdg-desktop-portal-termfilechooser/config" = {
+      source = ./termfilechooser.conf;
+    };
+    ".config/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh" = {
+      source = ./yazi-wrapper.sh;
+      executable = true;
+    };
   };
 
   # You can also manage environment variables but you will have to manually

@@ -1,0 +1,5 @@
+MESA-INTEL: warning: ../src/intel/vulkan/anv_formats.c:802: FINISHME: support YUV colorspace with DRM format modifiers
+MESA-INTEL: warning: ../src/intel/vulkan/anv_formats.c:834: FINISHME: support more multi-planar formats with DRM modifiers
+Gtk-Message: 12:38:02.374: GtkDialog mapped without a transient parent. This is discouraged.
+
+(zenity:7347): Gtk-WARNING **: 12:38:03.535: Could not init tracker3 search engine: The name org.freedesktop.Tracker3.Miner.Files was not provided by any .service files

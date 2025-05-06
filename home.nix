@@ -15,7 +15,7 @@
     ayugram-desktop
     brave
     code-cursor
-    #discord
+    discord
     dmenu
     docker
     droidcam

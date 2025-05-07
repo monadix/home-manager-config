@@ -15,7 +15,7 @@
     ayugram-desktop
     brave
     code-cursor
-    #discord
+    discord
     dmenu
     docker
     droidcam
@@ -92,6 +92,7 @@
     };
   };
 
+<<<<<<< HEAD
   xdg = {
     portal = {
       enable = true;
@@ -109,7 +110,23 @@
       ];
     };
 
-    mimeApps.defaultApplications = {
+    mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "text/html" = "org.qutebrowser.qutebrowser.desktop";
+        "x-scheme-handler/http" = "org.qutebrowser.qutebrowser.desktop";
+        "x-scheme-handler/https" = "org.qutebrowser.qutebrowser.desktop";
+        "x-scheme-handler/about" = "org.qutebrowser.qutebrowser.desktop";
+        "x-scheme-handler/unknown" = "org.qutebrowser.qutebrowser.desktop";
+
+        "x-scheme-handler/tg" = "userapp-AyuGram Desktop-JHY052.desktop";
+        "x-scheme-handler/tonsite" = "userapp-AyuGram Desktop-2UJ052.desktop";
+      };
+
+      associations.added = {
+        "x-scheme-handler/tg" = "userapp-AyuGram Desktop-JHY052.desktop";
+        "x-scheme-handler/tonsite" = "userapp-AyuGram Desktop-2UJ052.desktop";
+      };
     };
   };
 

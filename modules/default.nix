@@ -5,6 +5,7 @@
     ./git.nix
     ./kitty.nix
     ./nvim
+    ./qutebrowser.nix
     ./shell
     ./syncthing
     ./tmux.nix

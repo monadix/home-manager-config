@@ -92,20 +92,20 @@
     };
   };
 
-<<<<<<< HEAD
   xdg = {
     portal = {
       enable = true;
       xdgOpenUsePortal = true;
 
       config = {
-        common = {
-          default = "*";
+        random-lol-xd = {
+          default = [ "random-lol-xd" "gtk" ];
           "org.freedesktop.impl.portal.FileChooser" = [ "termfilechooser" ];
         };
       };
 
       extraPortals = with pkgs; [
+        xdg-desktop-portal-gtk
         xdg-desktop-portal-termfilechooser
       ];
     };

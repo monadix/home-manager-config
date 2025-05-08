@@ -28,7 +28,7 @@ save="$3"
 path="$4"
 out="$5"
 cmd="yazi"
-termcmd="${TERMCMD:-kitty}"
+termcmd="${TERMCMD:-kitty --class=file_chooser}"
 
 if [ "$save" = "1" ]; then
     ARGS=--chooser-file="$out"

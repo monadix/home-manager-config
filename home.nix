@@ -1,9 +1,9 @@
-{ pkgs
-, pkgsStable
-, nix-vscode-extensions
-,
-... }:
-
+{ 
+  pkgs,
+  pkgsStable,
+  nix-vscode-extensions,
+  ... 
+}:
 {
   home.username = "chell";
   home.homeDirectory = "/home/chell";

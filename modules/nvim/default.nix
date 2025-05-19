@@ -1,6 +1,7 @@
-{ pkgs
-,
-... }:
+{ 
+  pkgs,
+  ... 
+}:
 {
   programs.neovim = 
   let 

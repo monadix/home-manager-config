@@ -1,6 +1,7 @@
-{ pkgs
-,
-... }:
+{ 
+  pkgs,
+  ... 
+}:
 {
   programs.vscode = rec {
     enable = true;

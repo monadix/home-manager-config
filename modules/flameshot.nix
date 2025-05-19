@@ -1,6 +1,7 @@
-{ config
-, 
-... }:
+{ 
+  config, 
+  ... 
+}:
 {
   services.flameshot = {
     enable = true;

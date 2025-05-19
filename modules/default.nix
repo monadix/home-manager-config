@@ -12,5 +12,6 @@
     ./vscode.nix
     ./xsession
     ./yazi
+    ./zed-editor.nix
   ];
 }

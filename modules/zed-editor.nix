@@ -22,6 +22,15 @@
       package-version-server
     ];
 
+    userKeymaps = [
+      {
+        context = "VimControl && !menu";
+        bindings = {
+          "space f" = "file_finder::Toggle";
+        };
+      }
+    ];
+
     userSettings = {
       ui_font_size = 16;
       buffer_font_size = 16;

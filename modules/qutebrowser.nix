@@ -10,6 +10,8 @@
         directory = "~/Downloads/qute/";
         prompt = false;
       };
+
+      auto_save.session = true;
     };
 
     keyBindings = {

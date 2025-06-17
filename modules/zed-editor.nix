@@ -20,6 +20,7 @@
       rust-analyzer
       vscode-langservers-extracted
       package-version-server
+      gopls
     ];
 
     userKeymaps = [
@@ -46,14 +47,16 @@
         enabled = true;
       };
 
-      lsp.rust_analyzer.initialization_options.inlayHints = {
-        maxLength = null;        
-        lifetimeEllistionHints = {
-          enable = "skip_trivial";
-          useParameterNames = true;
-        };
-        closureReturnTypeHints = {
-          enable = "always";
+      lsp = {
+        rust_analyzer.initialization_options.inlayHints = {
+          maxLength = null;        
+          lifetimeEllistionHints = {
+            enable = "skip_trivial";
+            useParameterNames = true;
+          };
+          closureReturnTypeHints = {
+            enable = "always";
+          };
         };
       };
     };

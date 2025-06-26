@@ -5,7 +5,7 @@
     ./git.nix
     ./kitty.nix
     ./nvim
-    ./qutebrowser.nix
+    ./qutebrowser
     ./shell
     ./syncthing
     ./tmux.nix

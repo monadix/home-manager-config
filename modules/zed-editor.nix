@@ -28,6 +28,8 @@
         context = "VimControl && !menu";
         bindings = {
           "space f" = "file_finder::Toggle";
+          "ctrl-b" = "workspace::ToggleLeftDock";
+          "ctrl-j" = "workspace::ToggleBottomDock";
         };
       }
     ];

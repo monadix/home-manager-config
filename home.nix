@@ -1,6 +1,7 @@
 { 
   pkgs,
   pkgsStable,
+  pkgsMaster,
   nix-vscode-extensions,
   ... 
 }:

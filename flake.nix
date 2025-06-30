@@ -2,9 +2,11 @@
   description = "Chell's Home Manager configuration";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/24.05";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/25.05";
+
+    nixpkgs-master.url = "github:NixOS/nixpkgs";
 
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -18,11 +20,12 @@
 
   };
 
-  outputs = { nixpkgs, nixpkgs-stable, home-manager, nix-vscode-extensions, ... }:
+  outputs = { nixpkgs, nixpkgs-stable, nixpkgs-master, home-manager, nix-vscode-extensions, ... }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
       pkgsStable = nixpkgs-stable.legacyPackages.${system};
+      pkgsMaster = nixpkgs-master.legacyPackages.${system};
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
@@ -35,7 +38,7 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
         extraSpecialArgs = {
-          inherit nix-vscode-extensions pkgsStable;
+          inherit nix-vscode-extensions pkgsStable pkgsMaster;
         };
       };
     };

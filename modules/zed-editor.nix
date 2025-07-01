@@ -40,6 +40,8 @@
 
       theme = "Nord";
 
+      file_scan_exclusions = [];
+
       vim_mode = true;
       relative_line_numbers = true;
 

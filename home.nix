@@ -24,16 +24,16 @@
     evince
     feh
     firefox
-    gimp
+    pkgsStable.gimp
     gnumake
     htop
-    jetbrains.idea-community
+    pkgsStable.jetbrains.idea-community
     krita
     libreoffice
     mpv
     obs-studio
     obsidian
-    pkgsStable.openshot-qt
+    openshot-qt
     pavucontrol
     postman
     qbittorrent

@@ -3,8 +3,6 @@
   programs.qutebrowser = {
     enable = true;
 
-    package = pkgsMaster.qutebrowser;
-
     settings = 
     let 
       pref = {

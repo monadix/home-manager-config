@@ -8,6 +8,7 @@
     installRemoteServer = true;
 
     extensions = [
+      "c3"
       "git-firefly"
       "nix"
       "nord"
@@ -15,6 +16,7 @@
     ];
 
     extraPackages = with pkgs; [
+      c3-lsp
       nil
       nixd
       rust-analyzer

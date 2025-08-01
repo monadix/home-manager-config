@@ -14,7 +14,6 @@
   home.packages = with pkgs; [
     acpilight
     ayugram-desktop
-    brave
     code-cursor
     discord
     dmenu

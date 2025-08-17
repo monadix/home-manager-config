@@ -28,6 +28,7 @@
           "properties" = true;
           "proto" = true;
         };
+        "c3.lsp.path" = "${pkgs.c3-lsp}/bin/c3-lsp";
       };
 
       extensions = with pkgs.vscode-marketplace; [

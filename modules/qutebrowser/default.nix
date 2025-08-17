@@ -16,6 +16,8 @@
         };
 
         auto_save.session = true;
+
+        qt.args = [ "disable-features=PermissionElement" ];
       };
       nordTheme = import ./nord-theme.nix;
     in lib.attrsets.recursiveUpdate pref nordTheme;

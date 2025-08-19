@@ -8,6 +8,8 @@
       pref = {
         colors.webpage.preferred_color_scheme = "dark";
 
+        content.pdfjs = true;
+
         downloads.location = {
           directory = "~/Downloads/qute/";
           prompt = false;

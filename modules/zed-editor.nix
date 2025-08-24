@@ -13,6 +13,7 @@
       "nix"
       "nord"
       "toml"
+      "scheme"
     ];
 
     extraPackages = with pkgs; [
@@ -37,9 +38,6 @@
     ];
 
     userSettings = {
-      ui_font_size = 16;
-      buffer_font_size = 16;
-
       theme = "Nord";
 
       file_scan_exclusions = [];

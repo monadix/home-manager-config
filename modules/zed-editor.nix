@@ -35,6 +35,13 @@
           "ctrl-j" = "workspace::ToggleBottomDock";
         };
       }
+      {
+        context = "VimControl && showing_code_actions";
+        bindings = {
+          "k" = "editor::ContextMenuPrevious";
+          "j" = "editor::ContextMenuNext";
+        };
+      }
     ];
 
     userSettings = {

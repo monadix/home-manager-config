@@ -1,4 +1,4 @@
-{ lib, pkgsMaster, ... }:
+{ lib, ... }:
 {
   programs.qutebrowser = {
     enable = true;

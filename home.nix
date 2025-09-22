@@ -58,12 +58,18 @@
     config = {
       allowUnfree = true;
       permittedInsecurePackages = [
-        "jitsi-meet-1.0.8043"
+        "qtwebengine-5.15.19"
       ];
     };
 
     overlays = [
       nix-vscode-extensions.overlays.default
+      # qutebrowser is broken
+      (final: prev: {
+        libsForQt5 = prev.libsForQt5.overrideScope (finalQt5Libs: prevQt5Libs: {
+          fcitx5-with-addons = prev.kdePackages.fcitx5-with-addons;
+        });
+      })
     ];
   };
   

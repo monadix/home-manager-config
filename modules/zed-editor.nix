@@ -33,6 +33,19 @@
           "space f" = "file_finder::Toggle";
           "ctrl-b" = "workspace::ToggleLeftDock";
           "ctrl-j" = "workspace::ToggleBottomDock";
+
+          "ctrl-[" = [ 
+            "editor::GoToPreviousDiagnostic"
+            {
+              severity.min = "error"; 
+            }
+          ];
+          "ctrl-]" = [ 
+            "editor::GoToDiagnostic"
+            {
+              severity.min = "error"; 
+            }
+          ];
         };
       }
       {

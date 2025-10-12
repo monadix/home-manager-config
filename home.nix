@@ -64,12 +64,6 @@
 
     overlays = [
       nix-vscode-extensions.overlays.default
-      # qutebrowser is broken
-      (final: prev: {
-        libsForQt5 = prev.libsForQt5.overrideScope (finalQt5Libs: prevQt5Libs: {
-          fcitx5-with-addons = prev.kdePackages.fcitx5-with-addons;
-        });
-      })
     ];
   };
   

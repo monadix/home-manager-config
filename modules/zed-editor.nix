@@ -58,7 +58,7 @@
     ];
 
     userSettings = {
-      theme = "Nord";
+      theme = "Nord Dark";
 
       file_scan_exclusions = [];
 

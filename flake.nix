@@ -17,10 +17,16 @@
       url = "github:nix-community/nix-vscode-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
-  outputs = { nixpkgs, nixpkgs-stable, nixpkgs-master, home-manager, nix-vscode-extensions, ... }:
+  outputs = { 
+    nixpkgs,
+    nixpkgs-stable,
+    nixpkgs-master,
+    home-manager,
+    nix-vscode-extensions,
+    ... 
+  }:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
@@ -38,7 +44,7 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
         extraSpecialArgs = {
-          inherit nix-vscode-extensions pkgsStable pkgsMaster;
+          inherit system pkgsStable pkgsMaster nix-vscode-extensions;
         };
       };
     };

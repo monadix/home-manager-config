@@ -1,8 +1,12 @@
 { 
+  system,
+
   pkgs,
   pkgsStable,
   pkgsMaster,
+
   nix-vscode-extensions,
+
   ... 
 }:
 {
@@ -32,13 +36,10 @@
     mpv
     obs-studio
     obsidian
-    openshot-qt
     pavucontrol
-    postman
     qbittorrent
     scrot
     telegram-desktop
-    todoist-electron
     tor-browser
     vlc
     wineWowPackages.stable
@@ -57,9 +58,6 @@
   nixpkgs = {
     config = {
       allowUnfree = true;
-      permittedInsecurePackages = [
-        "qtwebengine-5.15.19"
-      ];
     };
 
     overlays = [

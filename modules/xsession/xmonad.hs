@@ -62,7 +62,7 @@ main = xmonad . ewmh $ def
     muteAudioKey      = mustParseKey "<XF86AudioMute>"
 
   in 
-  [ ((myModMask, xK_b), spawn "brave")
+  [ ((myModMask, xK_b), spawn "qutebrowser")
 
   , ((shiftMask, xK_Alt_L), changeKeyboardLayout)
   , ((mod1Mask, xK_Shift_L), changeKeyboardLayout)
@@ -76,10 +76,16 @@ main = xmonad . ewmh $ def
 
   , ((myModMask, xK_p), spawn "SHELL=bash dmenu_run")
 
+  -- If we have such keys
   , ((noModMask, brightnessUpKey), changeBrightness 1)
   , ((noModMask, brightnessDownKey), changeBrightness (-1))
 
   , ((noModMask, muteAudioKey), spawn "amixer set Master toggle")
+  -- but we as well may not
+  , ((myModMask .|. shiftMask, xK_equal), changeBrightness 1)
+  , ((myModMask .|. shiftMask, xK_minus), changeBrightness (-1))
+
+  , ((myModMask, xK_m), spawn "amixer set Master toggle")
 
   , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.2 && xset dpms force off")
   , ((myModMask .|. shiftMask, xK_l), spawn "xautolock -locknow")

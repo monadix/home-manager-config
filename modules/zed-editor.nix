@@ -62,6 +62,8 @@
 
       file_scan_exclusions = [];
 
+      terminal.shell.program = "nu";
+
       vim_mode = true;
       relative_line_numbers = true;
 

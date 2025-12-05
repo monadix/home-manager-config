@@ -50,7 +50,7 @@
 
     # fonts
     corefonts
-    vistafonts
+    vista-fonts
   ];
 
   fonts.fontconfig.enable = true;

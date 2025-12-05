@@ -2,13 +2,14 @@
 {
   programs = {
     git = {
-    enable = true;
-      userName = "monadix";
-      userEmail = "arsenijalfeev@gmail.com";
+      enable = true;
+
+      settings.user = {
+        name = "monadix";
+        email = "arsenijalfeev@gmail.com";
+      };
     };
     
-    gh = {
-      enable = true;
-    };
+    gh.enable = true;
   };
 }

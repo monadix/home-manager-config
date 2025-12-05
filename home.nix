@@ -17,6 +17,7 @@
 
   home.packages = with pkgs; [
     acpilight
+    alsa-utils
     ayugram-desktop
     code-cursor
     discord

@@ -59,6 +59,7 @@ main = xmonad . ewmh $ def
 
     brightnessUpKey   = mustParseKey "<XF86MonBrightnessUp>"
     brightnessDownKey = mustParseKey "<XF86MonBrightnessDown>"
+    muteAudioKey      = mustParseKey "<XF86AudioMute>"
 
   in 
   [ ((myModMask, xK_b), spawn "brave")
@@ -77,6 +78,8 @@ main = xmonad . ewmh $ def
 
   , ((noModMask, brightnessUpKey), changeBrightness 1)
   , ((noModMask, brightnessDownKey), changeBrightness (-1))
+
+  , ((noModMask, muteAudioKey), spawn "amixer set Master toggle")
 
   , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.2 && xset dpms force off")
   , ((myModMask .|. shiftMask, xK_l), spawn "xautolock -locknow")

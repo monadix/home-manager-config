@@ -55,6 +55,12 @@
           "j" = "editor::ContextMenuNext";
         };
       }
+      {
+        context = "vim_mode == visual";
+        bindings = {
+          "h s" = "vim::HelixSelectRegex";
+        };
+      }
     ];
 
     userSettings = {

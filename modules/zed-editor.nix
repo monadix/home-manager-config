@@ -75,6 +75,8 @@
 
       edit_predictions.mode = "subtle";
 
+      session.trust_all_worktrees = true;
+
       inlay_hints = {
         enabled = true;
       };

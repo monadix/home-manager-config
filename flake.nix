@@ -29,9 +29,16 @@
   }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      pkgsStable = nixpkgs-stable.legacyPackages.${system};
-      pkgsMaster = nixpkgs-master.legacyPackages.${system};
+
+      importPkgsDefaultArgs = p: import p {
+        inherit system;
+
+        config.allowUnfree = true;
+      };
+
+      pkgs = importPkgsDefaultArgs nixpkgs;
+      pkgsStable = importPkgsDefaultArgs nixpkgs-stable;
+      pkgsMaster = importPkgsDefaultArgs nixpkgs-master;
     in {
       homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;

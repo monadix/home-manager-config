@@ -10,7 +10,7 @@
   in {
     enable = true;
     
-    extraLuaConfig = builtins.readFile ./options.lua;
+    initLua = builtins.readFile ./options.lua;
     extraPackages = with pkgs; [
       xclip
     ];

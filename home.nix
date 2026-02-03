@@ -19,7 +19,7 @@
     acpilight
     alsa-utils
     ayugram-desktop
-    code-cursor
+    pkgsStable.code-cursor
     discord
     dmenu
     docker
@@ -31,7 +31,7 @@
     pkgsStable.gimp
     gnumake
     htop
-    pkgsStable.jetbrains.idea-community
+    jetbrains.idea-oss
     krita
     libreoffice
     mpv

@@ -27,11 +27,4 @@
       enable = true;
     };
   };
-
-  home.file = {
-    ".config/nushell/scripts" = {
-      source = ./scripts;
-      recursive = true;
-    };
-  };
 }

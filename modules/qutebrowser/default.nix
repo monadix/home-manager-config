@@ -3,24 +3,20 @@
   programs.qutebrowser = {
     enable = true;
 
-    settings = 
-    let 
-      pref = {
-        colors.webpage.preferred_color_scheme = "dark";
+    settings = {
+      colors.webpage.preferred_color_scheme = "dark";
 
-        content.pdfjs = true;
+      content.pdfjs = true;
 
-        downloads.location = {
-          directory = "~/Downloads/qute/";
-          prompt = false;
-        };
-
-        auto_save.session = true;
-
-        qt.args = [ "disable-features=PermissionElement" ];
+      downloads.location = {
+        directory = "~/Downloads/qute/";
+        prompt = false;
       };
-      nordTheme = import ./nord-theme.nix;
-    in lib.attrsets.recursiveUpdate pref nordTheme;
+
+      auto_save.session = true;
+
+      qt.args = [ "disable-features=PermissionElement" ];
+    };
 
     keyBindings = {
       normal = {

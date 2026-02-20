@@ -22,6 +22,8 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    import-tree.url = "github:vic/import-tree"; 
   };
 
   outputs = { 
@@ -31,6 +33,7 @@
     home-manager,
     nix-vscode-extensions,
     sops-nix,
+    import-tree,
     ... 
   }:
     let
@@ -51,7 +54,7 @@
 
         modules = [ 
           ./home.nix 
-          ./modules
+          (import-tree ./modules)
         ];
 
         # Optionally use extraSpecialArgs

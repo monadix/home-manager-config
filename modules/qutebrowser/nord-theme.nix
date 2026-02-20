@@ -23,7 +23,7 @@ let
   };
 in 
 {
-  colors = {
+  programs.qutebrowser.settings.colors = {
     completion = {
       category = {
         bg = nord.nord0;

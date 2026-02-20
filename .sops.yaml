@@ -1,0 +1,9 @@
+keys:
+  - &thinkpad age1xs7ywlypc8kznrcnxweycy5vdc463jxqsk848z5n2s7ha6g7k5mq6h5ege
+  - &workstation age1hyda8g30kemzsggh8nyfmk2zlshvq2qvmtze9qv80js5xyhl0eqqcckk9x
+creation_rules:
+  - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
+    key_groups:
+    - age:
+      - *thinkpad
+      - *workstation

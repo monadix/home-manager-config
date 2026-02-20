@@ -17,6 +17,11 @@
       url = "github:nix-community/nix-vscode-extensions";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    sops-nix = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { 
@@ -25,6 +30,7 @@
     nixpkgs-master,
     home-manager,
     nix-vscode-extensions,
+    sops-nix,
     ... 
   }:
     let
@@ -51,7 +57,7 @@
         # Optionally use extraSpecialArgs
         # to pass through arguments to home.nix
         extraSpecialArgs = {
-          inherit system pkgsStable pkgsMaster nix-vscode-extensions;
+          inherit system pkgsStable pkgsMaster nix-vscode-extensions sops-nix;
         };
       };
     };

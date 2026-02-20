@@ -6,6 +6,7 @@
   pkgsMaster,
 
   nix-vscode-extensions,
+  sops-nix,
 
   ... 
 }:
@@ -15,11 +16,17 @@
 
   home.stateVersion = "23.05";
 
+  imports = [
+    sops-nix.homeManagerModules.sops
+  ];
+
   home.packages = with pkgs; [
     acpilight
+    age
     alsa-utils
     ayugram-desktop
     pkgsStable.code-cursor
+    dig
     discord
     dmenu
     docker
@@ -38,8 +45,11 @@
     obs-studio
     obsidian
     pavucontrol
+    python3
     qbittorrent
+    ripgrep
     scrot
+    sops
     telegram-desktop
     tor-browser
     vlc

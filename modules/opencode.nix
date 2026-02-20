@@ -32,10 +32,15 @@
   sops.secrets.internal-ollama-url = {};
 
   systemd.user.services.opencode-write-config = {
+    Unit = {
+      X-SwitchMethod = "restart";
+      Description = "write opencode config";
+    };
     Service = {
-      ExecStart = "${pkgs.writeShellScript "opencode-write-config" ''
-        mkdir -p ~/opencode
-        cp ${config.sops.templates."opencode.json".path} ~/opencode/opencode.json
+      ExecStart = "${pkgs.writers.writeBash "opencode-write-config" ''
+        ${pkgs.coreutils-full}/bin/rm -f ~/.config/opencode/opencode.json
+        ${pkgs.coreutils-full}/bin/mkdir -p ~/.config/opencode 
+        ${pkgs.coreutils-full}/bin/cp ${config.sops.templates."opencode.json".path} ~/.config/opencode/opencode.json 
       ''}";
     };
   };

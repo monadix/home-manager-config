@@ -53,9 +53,9 @@
     telegram-desktop
     tor-browser
     vlc
-    wineWowPackages.stable
+    wineWow64Packages.stable
     winetricks
-    xorg.libXcomposite
+    libxcomposite
     xautolock
     zoom-us
 

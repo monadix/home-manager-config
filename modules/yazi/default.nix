@@ -4,6 +4,8 @@
     enable = true;
     enableNushellIntegration = true;
 
+    shellWrapperName = "y";
+
     keymap = {
       mgr.prepend_keymap = [
         { 

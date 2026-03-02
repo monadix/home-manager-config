@@ -40,7 +40,7 @@
     htop
     jetbrains.idea-oss
     krita
-    libreoffice
+    pkgsStable.libreoffice
     mpv
     obs-studio
     obsidian

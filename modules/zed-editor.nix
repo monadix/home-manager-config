@@ -9,11 +9,14 @@
 
     extensions = [
       "c3"
-      "git-firefly"
+      "jq"
       "nix"
-      "nord"
-      "toml"
       "scheme"
+      "toml"
+
+      "git-firefly"
+
+      "nord"
     ];
 
     extraPackages = with pkgs; [
@@ -71,7 +74,7 @@
       terminal.shell.program = "nu";
 
       vim_mode = true;
-      relative_line_numbers = true;
+      relative_line_numbers = "enabled";
 
       edit_predictions.mode = "subtle";
 

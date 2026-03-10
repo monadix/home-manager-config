@@ -42,6 +42,11 @@
     }
   }'';
 
+  home.file.".config/opencode/agents" = {
+    source = ./agents;
+    recursive = true;
+  };
+
   sops.secrets = {
     internal-ollama-url = {};
     context7-api-key = {};
@@ -61,6 +66,7 @@
 
     Service = {
       ExecStart = "${pkgs.writers.writeBash "opencode-write-config" ''
+        ${pkgs.coreutils-full}/bin/mkdir -p ~/.config/opencode
         ${pkgs.coreutils-full}/bin/install -m 400 -D ${config.sops.templates."opencode.json".path} ~/.config/opencode/opencode.json 
       ''}";
     };

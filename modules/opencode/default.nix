@@ -42,7 +42,7 @@
     }
   }'';
 
-  home.file.".config/opencode/agents" = {
+  home.file.".opencode/agents" = {
     source = ./agents;
     recursive = true;
   };

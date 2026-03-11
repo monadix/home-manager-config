@@ -2,7 +2,7 @@
 description: >
   A read-only agent that answers questions about the codebase.
   It cannot modify files or create plans. Use it to search, explore, and explain code.
-mode: subagent
+mode: primary
 tools:
   write: false
   edit: false

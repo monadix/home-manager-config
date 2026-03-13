@@ -25,6 +25,9 @@
         "models": {
           "qwen3-coder-next:q8_0": {
             "name": "qwen3-coder-next:q8_0"
+          },
+          "qwen3.5:122b": {
+            "name": "qwen3.5:122b"
           }
         }
       }

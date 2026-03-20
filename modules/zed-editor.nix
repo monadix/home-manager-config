@@ -12,6 +12,7 @@
       "jq"
       "nix"
       "scheme"
+      "terraform"
       "toml"
 
       "git-firefly"

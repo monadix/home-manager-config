@@ -40,15 +40,26 @@ myStartupHook = do
   spawnOnce "feh --bg-fill --no-fehbg ~/.wallpapers/nixos-nord-dark.png"
 
 
+myLayout = tiled ||| Full ||| Mirror tiled
+  where
+    tiled = Tall nmaster delta ratio
+    nmaster = 1
+    ratio = 1/2
+    delta = 3/100
+
+
 myModMask :: KeyMask
 myModMask = mod4Mask
 
 main = xmonad . ewmh $ def
   { modMask = myModMask
   , terminal = "kitty"
+
   , normalBorderColor = "#4C566A"
   , focusedBorderColor = "#D8DEE9"
   , borderWidth = 1
+
+  , layoutHook = myLayout
   , startupHook = myStartupHook
   }
 

@@ -8,6 +8,8 @@
         name = "monadix";
         email = "arsenijalfeev@gmail.com";
       };
+
+      signing.format = null;
     };
     
     gh.enable = true;

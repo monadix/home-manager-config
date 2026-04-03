@@ -25,6 +25,7 @@
       nil
       nixd
       rust-analyzer
+      terraform-ls
       vscode-langservers-extracted
       package-version-server
       gopls

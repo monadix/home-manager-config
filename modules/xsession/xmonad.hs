@@ -31,8 +31,13 @@ changeKeyboardLayout = do
 
 
 changeBrightness :: Float -> X ()
-changeBrightness delta = do
-  spawn $ "xbacklight -inc " ++ show delta 
+changeBrightness delta = spawn $ "xbacklight -inc " ++ show delta 
+
+
+changeVolume :: Int -> X ()
+changeVolume delta = spawn $ "pamixer " ++ command ++ " " ++ show (abs delta) ++ " 2> ~/aboba.log"
+  where
+    command = if delta >= 0 then "-i" else "-d"
 
 
 myStartupHook :: X ()
@@ -70,7 +75,10 @@ main = xmonad . ewmh $ def
 
     brightnessUpKey   = mustParseKey "<XF86MonBrightnessUp>"
     brightnessDownKey = mustParseKey "<XF86MonBrightnessDown>"
+
     muteAudioKey      = mustParseKey "<XF86AudioMute>"
+    volumeUpKey       = mustParseKey "<XF86AudioRaiseVolume>"
+    volumeDownKey     = mustParseKey "<XF86AudioLowerVolume>"
 
   in 
   [ ((myModMask, xK_b), spawn "qutebrowser")
@@ -91,10 +99,17 @@ main = xmonad . ewmh $ def
   , ((noModMask, brightnessUpKey), changeBrightness 1)
   , ((noModMask, brightnessDownKey), changeBrightness (-1))
 
+  , ((noModMask, volumeUpKey), changeVolume 1)
+  , ((noModMask, volumeDownKey), changeVolume (-1))
+
   , ((noModMask, muteAudioKey), spawn "amixer set Master toggle")
+
   -- but we as well may not
   , ((myModMask .|. shiftMask, xK_equal), changeBrightness 1)
   , ((myModMask .|. shiftMask, xK_minus), changeBrightness (-1))
+
+  , ((myModMask .|. shiftMask, xK_bracketright), changeVolume 1)
+  , ((myModMask .|. shiftMask, xK_bracketleft), changeVolume (-1))
 
   , ((myModMask, xK_m), spawn "amixer set Master toggle")
 

@@ -45,6 +45,7 @@
     mpv
     obs-studio
     obsidian
+    pamixer
     pavucontrol
     python3
     qbittorrent

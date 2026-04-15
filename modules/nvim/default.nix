@@ -9,6 +9,9 @@
     toLuaFile = file: toLua (builtins.readFile file);
   in {
     enable = true;
+
+    withRuby = false;
+    withPython3 = false;
     
     initLua = builtins.readFile ./options.lua;
     extraPackages = with pkgs; [
@@ -17,6 +20,7 @@
 
     plugins = with pkgs.vimPlugins; [
       {
+        type = "viml";
         plugin = nord-nvim;
         config = "colorscheme nord";
       }

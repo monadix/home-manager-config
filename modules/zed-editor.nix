@@ -63,7 +63,7 @@
       {
         context = "vim_mode == visual";
         bindings = {
-          "h s" = "vim::HelixSelectRegex";
+          "space s" = "vim::HelixSelectRegex";
         };
       }
     ];

@@ -48,19 +48,34 @@
       pkgs = importPkgsDefaultArgs nixpkgs;
       pkgsStable = importPkgsDefaultArgs nixpkgs-stable;
       pkgsMaster = importPkgsDefaultArgs nixpkgs-master;
+
+      isSpecific = pkgs.lib.hasInfix ".thinkpad.";
     in {
-      homeConfigurations.chell = home-manager.lib.homeManagerConfiguration {
-        inherit pkgs;
+      homeConfigurations = {
+        generic = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
 
-        modules = [ 
-          ./home.nix 
-          (import-tree ./modules)
-        ];
+          modules = [ 
+            ./home.nix 
+            (import-tree.filterNot isSpecific ./modules)
+          ];
 
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
-        extraSpecialArgs = {
-          inherit system pkgsStable pkgsMaster nix-vscode-extensions sops-nix;
+          extraSpecialArgs = {
+            inherit system pkgsStable pkgsMaster nix-vscode-extensions sops-nix;
+          };
+        };
+
+        thinkpad = home-manager.lib.homeManagerConfiguration {
+          inherit pkgs;
+
+          modules = [
+            ./home.nix
+            (import-tree ./modules)
+          ];
+
+          extraSpecialArgs = {
+            inherit system pkgsStable pkgsMaster nix-vscode-extensions sops-nix;
+          };
         };
       };
     };

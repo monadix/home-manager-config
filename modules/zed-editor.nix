@@ -7,6 +7,11 @@
     enable = true;
     installRemoteServer = true;
 
+    mutableUserDebug = false;
+    mutableUserSettings = false;
+    mutableUserKeymaps = false;
+    mutableUserTasks = false;
+
     extensions = [
       "c3"
       "jq"

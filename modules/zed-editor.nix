@@ -85,6 +85,9 @@
 
       edit_predictions.mode = "subtle";
 
+      project_panel.dock = "left";
+      assistant_panel.dock = "left";
+
       session.trust_all_worktrees = true;
 
       inlay_hints = {

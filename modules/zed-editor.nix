@@ -74,6 +74,8 @@
     ];
 
     userSettings = {
+      cli_default_open_behavior = "new_window";
+
       theme = "Nord Dark";
 
       file_scan_exclusions = [];
@@ -86,7 +88,7 @@
       edit_predictions.mode = "subtle";
 
       project_panel.dock = "left";
-      assistant_panel.dock = "left";
+      agent.dock = "left";
 
       session.trust_all_worktrees = true;
 
@@ -95,7 +97,7 @@
       };
 
       lsp = {
-        rust_analyzer.initialization_options.inlayHints = {
+        rust-analyzer.initialization_options.inlayHints = {
           maxLength = null;        
           lifetimeEllistionHints = {
             enable = "skip_trivial";

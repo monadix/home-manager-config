@@ -14,8 +14,6 @@
         uiColor = "#FFFFFF";
         contrastUiColor = "#000000";
 
-        useX11LegacyScreenshot = true;
-
         showHelp = false;
         showSidePanelButton = false;
 

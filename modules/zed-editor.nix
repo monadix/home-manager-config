@@ -16,6 +16,7 @@
       "c3"
       "jq"
       "nix"
+      "proto"
       "scheme"
       "terraform"
       "toml"

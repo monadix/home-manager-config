@@ -28,7 +28,7 @@
     ayugram-desktop
     pkgsStable.code-cursor
     dig
-    discord
+    vesktop
     dmenu
     docker
     droidcam

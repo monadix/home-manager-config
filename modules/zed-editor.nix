@@ -1,80 +1,89 @@
 { 
   pkgs,
+  lib,
+  config,
   ... 
-}:
-{
-  programs.zed-editor = {
-    enable = true;
-    installRemoteServer = true;
+}: {
+  options.zedSettingsTemplate = lib.mkOption {
+    type = lib.types.attrs;
+    default = {};
+  };
 
-    mutableUserDebug = false;
-    mutableUserSettings = false;
-    mutableUserKeymaps = false;
-    mutableUserTasks = false;
+  config = {
+    programs.zed-editor = {
+      enable = true;
+      installRemoteServer = true;
 
-    extensions = [
-      "c3"
-      "jq"
-      "nix"
-      "proto"
-      "scheme"
-      "terraform"
-      "toml"
+      mutableUserDebug = false;
+      mutableUserKeymaps = false;
+      mutableUserTasks = false;
 
-      "git-firefly"
+      extensions = [
+        "c3"
+        "jq"
+        "nix"
+        "proto"
+        "scheme"
+        "terraform"
+        "toml"
 
-      "nord"
-    ];
+        "git-firefly"
 
-    extraPackages = with pkgs; [
-      c3-lsp
-      nil
-      nixd
-      rust-analyzer
-      terraform-ls
-      vscode-langservers-extracted
-      package-version-server
-      gopls
-    ];
+        "nord"
+      ];
 
-    userKeymaps = [
-      {
-        context = "VimControl && !menu";
-        bindings = {
-          "space f" = "file_finder::Toggle";
-          "ctrl-b" = "workspace::ToggleLeftDock";
-          "ctrl-j" = "workspace::ToggleBottomDock";
+      extraPackages = with pkgs; [
+        c3-lsp
+        nil
+        nixd
+        rust-analyzer
+        terraform-ls
+        vscode-langservers-extracted
+        package-version-server
+        gopls
+      ];
 
-          "ctrl-[" = [ 
-            "editor::GoToPreviousDiagnostic"
-            {
-              severity.min = "error"; 
-            }
-          ];
-          "ctrl-]" = [ 
-            "editor::GoToDiagnostic"
-            {
-              severity.min = "error"; 
-            }
-          ];
-        };
-      }
-      {
-        context = "VimControl && showing_code_actions";
-        bindings = {
-          "k" = "editor::ContextMenuPrevious";
-          "j" = "editor::ContextMenuNext";
-        };
-      }
-      {
-        context = "vim_mode == visual";
-        bindings = {
-          "space s" = "vim::HelixSelectRegex";
-        };
-      }
-    ];
+      userSettings = {};
 
-    userSettings = {
+      userKeymaps = [
+        {
+          context = "VimControl && !menu";
+          bindings = {
+            "space f" = "file_finder::Toggle";
+            "ctrl-b" = "workspace::ToggleLeftDock";
+            "ctrl-j" = "workspace::ToggleBottomDock";
+
+            "ctrl-[" = [ 
+              "editor::GoToPreviousDiagnostic"
+              {
+                severity.min = "error"; 
+              }
+            ];
+            "ctrl-]" = [ 
+              "editor::GoToDiagnostic"
+              {
+                severity.min = "error"; 
+              }
+            ];
+          };
+        }
+        {
+          context = "VimControl && showing_code_actions";
+          bindings = {
+            "k" = "editor::ContextMenuPrevious";
+            "j" = "editor::ContextMenuNext";
+          };
+        }
+        {
+          context = "vim_mode == visual";
+          bindings = {
+            "space s" = "vim::HelixSelectRegex";
+          };
+        }
+      ];
+    };
+
+    zedSettingsTemplate = {
       cli_default_open_behavior = "new_window";
 
       theme = "Nord Dark";
@@ -89,7 +98,19 @@
       edit_predictions.mode = "subtle";
 
       project_panel.dock = "left";
-      agent.dock = "left";
+      agent.dock = "right";
+
+      language_models.ollama = {
+        api_url = config.sops.placeholder.internal-ollama-url;
+        auto_discover = false;
+        available_models = [
+          {
+            name = "gemma4:31b-it-bf16";
+            display_name = "gemma 31b";
+            max_tokens = 4096;
+          }
+        ];
+      };
 
       session.trust_all_worktrees = true;
 
@@ -109,6 +130,12 @@
           };
         };
       };
+    };
+
+    sops.templates."zed-editor-settings.json".content = builtins.toJSON config.zedSettingsTemplate;
+
+    home.file.".config/zed/settings.json" = {
+      source = config.lib.file.mkOutOfStoreSymlink config.sops.templates."zed-editor-settings.json".path;
     };
   };
 }

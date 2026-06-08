@@ -1,6 +1,6 @@
 { ... }:
 {
-  programs.zed-editor.userSettings = {
+  zedSettingsTemplate = {
     buffer_font_size = 9;
     ui_font_size = 9;
   };

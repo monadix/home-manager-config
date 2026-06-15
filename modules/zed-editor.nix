@@ -12,6 +12,19 @@
   config = {
     programs.zed-editor = {
       enable = true;
+      package = pkgs.writeShellScriptBin "zeditor" ''
+        exec ${lib.getExe pkgs.bubblewrap} \
+          --ro-bind / / \
+          --dev /dev \
+          --proc /proc \
+          --tmpfs /tmp \
+          --bind "$HOME" "$HOME" \
+          --remount-ro "$HOME/.config/zed/settings.json" \
+          --unshare-all \
+          --share-net \
+          ${lib.getExe pkgs.zed-editor} "$@" 
+      '';
+
       installRemoteServer = true;
 
       mutableUserDebug = false;

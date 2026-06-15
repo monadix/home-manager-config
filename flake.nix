@@ -13,11 +13,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-vscode-extensions = {
-      url = "github:nix-community/nix-vscode-extensions";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -31,7 +26,6 @@
     nixpkgs-stable,
     nixpkgs-master,
     home-manager,
-    nix-vscode-extensions,
     sops-nix,
     import-tree,
     ... 
@@ -61,7 +55,7 @@
           ];
 
           extraSpecialArgs = {
-            inherit system pkgsStable pkgsMaster nix-vscode-extensions sops-nix;
+            inherit system pkgsStable pkgsMaster sops-nix;
           };
         };
 
@@ -74,7 +68,7 @@
           ];
 
           extraSpecialArgs = {
-            inherit system pkgsStable pkgsMaster nix-vscode-extensions sops-nix;
+            inherit system pkgsStable pkgsMaster sops-nix;
           };
         };
       };

@@ -6,7 +6,6 @@
   pkgsStable,
   pkgsMaster,
 
-  nix-vscode-extensions,
   sops-nix,
 
   ... 
@@ -72,10 +71,6 @@
     config = {
       allowUnfree = true;
     };
-
-    overlays = [
-      nix-vscode-extensions.overlays.default
-    ];
   };
   
   services.home-manager.autoExpire = {

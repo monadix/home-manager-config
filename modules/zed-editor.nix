@@ -132,7 +132,14 @@
       };
     };
 
-    sops.templates."zed-editor-settings.json".content = builtins.toJSON config.zedSettingsTemplate;
+    sops.templates."zed-editor-settings.json".content = let 
+      extensions = config.programs.zed-editor.extensions;
+    in builtins.toJSON (
+      config.zedSettingsTemplate 
+      // (lib.optionalAttrs (builtins.length extensions > 0) {
+        auto_install_extensions = lib.genAttrs extensions (_: true);
+      })
+    );
 
     home.file.".config/zed/settings.json" = {
       source = config.lib.file.mkOutOfStoreSymlink config.sops.templates."zed-editor-settings.json".path;

@@ -12,6 +12,22 @@
   config = {
     programs.zed-editor = {
       enable = true;
+      package = let 
+        configPath = config.sops.templates."zed-editor-settings.json".path;
+      in pkgs.writers.writeNuBin "zeditor" '' 
+      def main [ ...args ] {(
+        ${lib.getExe pkgs.bubblewrap}
+          --bind / / 
+          --dev-bind /dev /dev 
+          --ro-bind (realpath ${configPath}) (realpath ${configPath})
+          --setenv HOME $env.HOME
+          --setenv PATH ($env.PATH | str join ':')
+          --setenv DISPLAY $env.DISPLAY
+          --setenv XDG_RUNTIME_DIR $env.XDG_RUNTIME_DIR
+          --chdir $env.PWD 
+          ${lib.getExe pkgs.zed-editor} ...$args
+      )}'';
+
       installRemoteServer = true;
 
       mutableUserDebug = false;

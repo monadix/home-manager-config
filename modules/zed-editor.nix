@@ -15,18 +15,25 @@
       package = let 
         configPath = config.sops.templates."zed-editor-settings.json".path;
       in pkgs.writers.writeNuBin "zeditor" '' 
-      def main [ ...args ] {(
-        ${lib.getExe pkgs.bubblewrap}
-          --bind / / 
-          --dev-bind /dev /dev 
-          --ro-bind (realpath ${configPath}) (realpath ${configPath})
-          --setenv HOME $env.HOME
-          --setenv PATH ($env.PATH | str join ':')
-          --setenv DISPLAY $env.DISPLAY
-          --setenv XDG_RUNTIME_DIR $env.XDG_RUNTIME_DIR
-          --chdir $env.PWD 
-          ${lib.getExe pkgs.zed-editor} ...$args
-      )}'';
+      def --wrapped main [ ...args ] {
+        let env_args = ($env 
+          | items { |env_var, val| {env_var: $env_var val: $val}} 
+          | where ($it.val | describe) == string  
+          | each { |var| ["--setenv" ($var.env_var) ($var.val)] }
+          | flatten
+        )
+
+        (${lib.getExe pkgs.bubblewrap}
+            --bind / / 
+            --dev-bind /dev /dev 
+            --ro-bind ~/.nix-mapped /nix
+            --ro-bind (realpath ${configPath}) (realpath ${configPath})
+            --setenv PATH ($env.PATH | str join ':')
+            ...$env_args
+            --chdir $env.PWD 
+            ${lib.getExe pkgs.zed-editor} ...$args
+        )
+      }'';
 
       installRemoteServer = true;
 
@@ -160,5 +167,10 @@
     home.file.".config/zed/settings.json" = {
       source = config.lib.file.mkOutOfStoreSymlink config.sops.templates."zed-editor-settings.json".path;
     };
+
+    home.activation.bindNixDir = config.lib.dag.entryAfter ["writeBoundary"] ''
+      mkdir -p ~/.nix-mapped
+      ${lib.getExe' pkgs.bindfs "bindfs"} -u $(id -u) -g $(id -g) --no-allow-other /nix ~/.nix-mapped
+    '';
   };
 }

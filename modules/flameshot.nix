@@ -23,6 +23,6 @@
   };
 
   home.activation.ensureFlameshotSavePath = config.lib.dag.entryAfter ["writeBoundary"] ''
-    mkdir -p $HOME/Pictures/Screenshots
+    run mkdir -p $HOME/Pictures/Screenshots
   '';
 }

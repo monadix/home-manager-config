@@ -27,6 +27,6 @@
   };
 
   home.activation.quteEnsureDownloadsDir = lib.hm.dag.entryAfter ["writeBoundary"] ''
-    mkdir -p $HOME/Downloads/qute
+    run mkdir -p $HOME/Downloads/qute
   '';
 }

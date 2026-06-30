@@ -168,9 +168,32 @@
       source = config.lib.file.mkOutOfStoreSymlink config.sops.templates."zed-editor-settings.json".path;
     };
 
-    home.activation.bindNixDir = config.lib.dag.entryAfter ["writeBoundary"] ''
-      mkdir -p ~/.nix-mapped
-      ${lib.getExe' pkgs.bindfs "bindfs"} -u $(id -u) -g $(id -g) --no-allow-other /nix ~/.nix-mapped
-    '';
+    systemd.user.services.bind-nix-dir = {
+      Unit = {
+        Description = "bind /nix directory to ~/.nix-mapped using bindfs";
+      };
+
+      Service = {
+        ExecStart = lib.getExe (pkgs.writeShellApplication {
+          name = "bind-nix-dir";
+          runtimeInputs = [ pkgs.bindfs ];
+
+          text = ''
+            mkdir -p ~/.nix-mapped
+            exec bindfs -f -u "$(id -u)" -g "$(id -g)" --no-allow-other /nix ${config.home.homeDirectory}/.nix-mapped
+          '';
+        });
+
+        ExecStop = "${lib.getExe' pkgs.fuse "fusermount"} -u ${config.home.homeDirectory}/.nix-mapped";
+
+        Restart = "on-failure";
+      };
+
+      Install = {
+        WantedBy = [
+          "default.target"
+        ];
+      };
+    };
   };
 }

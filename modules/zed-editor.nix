@@ -26,7 +26,8 @@
         (${lib.getExe pkgs.bubblewrap}
             --bind / / 
             --dev-bind /dev /dev 
-            --ro-bind ~/.nix-mapped /nix
+#            --uid (id -u) --gid (id -g)
+            --ro-bind ~/.nix-mapped/store /nix/store
             --ro-bind (realpath ${configPath}) (realpath ${configPath})
             --setenv PATH ($env.PATH | str join ':')
             ...$env_args

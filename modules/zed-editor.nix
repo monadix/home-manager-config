@@ -143,14 +143,18 @@
       };
 
       lsp = {
-        rust-analyzer.initialization_options.inlayHints = {
-          maxLength = null;        
-          lifetimeEllistionHints = {
-            enable = "skip_trivial";
-            useParameterNames = true;
-          };
-          closureReturnTypeHints = {
-            enable = "always";
+        rust-analyzer.initialization_options = {
+          check.command = "clippy";
+
+          inlayHints = {
+            maxLength = null;        
+            lifetimeEllistionHints = {
+              enable = "skip_trivial";
+              useParameterNames = true;
+            };
+            closureReturnTypeHints = {
+              enable = "always";
+            };
           };
         };
       };

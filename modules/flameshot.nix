@@ -11,6 +11,8 @@
         savePath = "${config.home.homeDirectory}/Pictures/Screenshots";
         savePathFixed = true;
 
+        useX11LegacyScreenshot = true;
+
         uiColor = "#FFFFFF";
         contrastUiColor = "#000000";
 

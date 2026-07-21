@@ -25,7 +25,7 @@
     age
     alsa-utils
     ayugram-desktop
-    pkgsStable.code-cursor
+    codex
     dig
     vesktop
     dmenu

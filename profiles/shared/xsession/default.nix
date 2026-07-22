@@ -1,5 +1,6 @@
 { 
   pkgs,
+  assets,
   ... 
 }:
 {
@@ -42,12 +43,12 @@
 
   home.file = {
     ".wallpapers" = {
-      source = ./wallpapers;
+      source = assets.images;
       recursive = true;
     };
 
     ".screensaver-imgs" = {
-      source = ./screensaver-imgs;
+      source = assets.images;
       recursive = true;
     };
 

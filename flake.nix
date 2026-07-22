@@ -2,6 +2,8 @@
   description = "Chell's Home Manager configuration";
 
   inputs = {
+    assets.url = "github:monadix/assets";
+
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     nixpkgs-stable.url = "github:NixOS/nixpkgs/25.11";
@@ -22,6 +24,7 @@
   };
 
   outputs = { 
+    assets,
     nixpkgs,
     nixpkgs-stable,
     nixpkgs-master,
@@ -43,34 +46,22 @@
       pkgsStable = importPkgsDefaultArgs nixpkgs-stable;
       pkgsMaster = importPkgsDefaultArgs nixpkgs-master;
 
-      isSpecific = pkgs.lib.hasInfix ".thinkpad.";
+      profileWith = modules: home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+
+        modules = [
+          (import-tree ./profiles/shared)
+        ] ++ builtins.map import-tree modules;
+
+        extraSpecialArgs = {
+          inherit system assets pkgsStable pkgsMaster sops-nix;
+        };
+      };
     in {
       homeConfigurations = {
-        generic = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
+        default = profileWith [ ./profiles/default ];
 
-          modules = [ 
-            ./home.nix 
-            (import-tree.filterNot isSpecific ./modules)
-          ];
-
-          extraSpecialArgs = {
-            inherit system pkgsStable pkgsMaster sops-nix;
-          };
-        };
-
-        thinkpad = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
-
-          modules = [
-            ./home.nix
-            (import-tree ./modules)
-          ];
-
-          extraSpecialArgs = {
-            inherit system pkgsStable pkgsMaster sops-nix;
-          };
-        };
+        naumbuk = profileWith [ ./profiles/naumbuk ];
       };
     };
 }

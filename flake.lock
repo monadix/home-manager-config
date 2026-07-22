@@ -1,5 +1,20 @@
 {
   "nodes": {
+    "assets": {
+      "locked": {
+        "lastModified": 1784640953,
+        "narHash": "sha256-JV5V9R0v8FrHpab4v+YipCfosEVmyc7JnWYKTEOJNCU=",
+        "owner": "monadix",
+        "repo": "assets",
+        "rev": "fa342936601a6e431c4c0198c62a77a90ac31b11",
+        "type": "github"
+      },
+      "original": {
+        "owner": "monadix",
+        "repo": "assets",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -84,6 +99,7 @@
     },
     "root": {
       "inputs": {
+        "assets": "assets",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "nixpkgs": "nixpkgs",

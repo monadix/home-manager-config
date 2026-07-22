@@ -11,8 +11,8 @@
   ... 
 }:
 {
-  home.username = "chell";
-  home.homeDirectory = "/home/chell";
+  home.username = "monadix";
+  home.homeDirectory = "/home/monadix";
 
   home.stateVersion = "23.05";
 

@@ -1,6 +1,8 @@
 { 
-  pkgs,
   assets,
+
+  pkgs,
+  lib,
   ... 
 }:
 {
@@ -43,12 +45,30 @@
 
   home.file = {
     ".wallpapers" = {
-      source = assets.images;
+      source = lib.fileset.toSource {
+        root = assets.images;
+        fileset = assets.images + "/nixos-nord-dark.png";
+      };
       recursive = true;
     };
 
     ".screensaver-imgs" = {
-      source = assets.images;
+      source = lib.fileset.toSource {
+        root = assets.images;
+        fileset = lib.fileset.unions (builtins.map (path: assets.images + ("/" + path)) [
+          "ant-funny-sad.jpg"
+          "finally-good-tech.jpg"
+          "funny-sad-ant.jpeg"
+          "gopher.jpg"
+          "john-goida.jpg"
+          "me(literally).jpg"
+          "more-try-from.jpg"
+          "my-dreams.jpg"
+          "nazixos.jpg"
+          "surgut-sushestvuyet.jpg"
+          "я(блоко).jpg"
+        ]);
+      };
       recursive = true;
     };
 

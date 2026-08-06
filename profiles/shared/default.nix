@@ -38,7 +38,6 @@
     pkgsStable.gimp
     gnumake
     htop
-    jetbrains.idea-oss
     krita
     pkgsStable.libreoffice
     mpv
@@ -83,7 +82,7 @@
     enable = true;
 
     theme = {
-      package = pkgs.nordic;
+      package = pkgsStable.nordic;
       name = "Nordic";
     };
     gtk4.theme = config.gtk.theme;

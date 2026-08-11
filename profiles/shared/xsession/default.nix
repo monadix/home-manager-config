@@ -68,6 +68,7 @@
           "surgut-sushestvuyet.jpg"
           "я(блоко).jpg"
           "funny-sova.jpg"
+          "ye.jpg"
         ]);
       };
       recursive = true;

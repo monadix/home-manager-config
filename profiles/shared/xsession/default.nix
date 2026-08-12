@@ -67,6 +67,7 @@
           "nazixos.jpg"
           "surgut-sushestvuyet.jpg"
           "я(блоко).jpg"
+          "funny-sova.jpg"
         ]);
       };
       recursive = true;

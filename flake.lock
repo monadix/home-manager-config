@@ -2,11 +2,11 @@
   "nodes": {
     "assets": {
       "locked": {
-        "lastModified": 1784640953,
-        "narHash": "sha256-JV5V9R0v8FrHpab4v+YipCfosEVmyc7JnWYKTEOJNCU=",
+        "lastModified": 1786522562,
+        "narHash": "sha256-yb4aXKRQucSIbluMCLGf1T8ri5oQ0VlTmTQB5S0sHH4=",
         "owner": "monadix",
         "repo": "assets",
-        "rev": "fa342936601a6e431c4c0198c62a77a90ac31b11",
+        "rev": "f447ec8b678355b7965dfb99e5429fd4c2f8f810",
         "type": "github"
       },
       "original": {

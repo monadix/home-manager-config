@@ -20,9 +20,27 @@
 
     plugins = with pkgs.vimPlugins; [
       {
-        type = "viml";
         plugin = nord-nvim;
+        type = "viml";
         config = "colorscheme nord";
+      }
+      {
+        plugin = orgmode;
+        type = "lua";
+
+        config = ''
+           require("orgmode").setup({
+             org_agenda_files = { "~/org/*.org" },
+             org_default_notes_file = "~/org/inbox.org",
+
+             org_todo_keywords = {
+               "TODO",
+               "NEXT",
+               "|",
+               "DONE",
+             },
+           })
+        '';
       }
     ];
 

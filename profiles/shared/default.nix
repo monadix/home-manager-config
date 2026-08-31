@@ -46,6 +46,7 @@
     pamixer
     pavucontrol
     python3
+    python3Packages.virtualenv
     qbittorrent
     ripgrep
     scrot

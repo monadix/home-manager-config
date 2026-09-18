@@ -105,7 +105,8 @@
         "nixpkgs": "nixpkgs",
         "nixpkgs-master": "nixpkgs-master",
         "nixpkgs-stable": "nixpkgs-stable",
-        "sops-nix": "sops-nix"
+        "sops-nix": "sops-nix",
+        "telescope-orgmode": "telescope-orgmode"
       }
     },
     "sops-nix": {
@@ -125,6 +126,22 @@
       "original": {
         "owner": "Mic92",
         "repo": "sops-nix",
+        "type": "github"
+      }
+    },
+    "telescope-orgmode": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1778787710,
+        "narHash": "sha256-6Eb0dabJ7W+bxypSgmgLVEhkRnXx4Y2RAaFxcC4CBbc=",
+        "owner": "nvim-orgmode",
+        "repo": "telescope-orgmode.nvim",
+        "rev": "214fe56e105bb3d0638f33320ed959911a1bfcb1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nvim-orgmode",
+        "repo": "telescope-orgmode.nvim",
         "type": "github"
       }
     }

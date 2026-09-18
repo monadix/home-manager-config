@@ -21,6 +21,11 @@
     };
 
     import-tree.url = "github:vic/import-tree"; 
+
+    telescope-orgmode = {
+      url = "github:nvim-orgmode/telescope-orgmode.nvim";
+      flake = false;
+    };
   };
 
   outputs = { 
@@ -31,6 +36,7 @@
     home-manager,
     sops-nix,
     import-tree,
+    telescope-orgmode,
     ... 
   }:
     let
@@ -54,7 +60,13 @@
         ] ++ builtins.map import-tree modules;
 
         extraSpecialArgs = {
-          inherit system assets pkgsStable pkgsMaster sops-nix;
+          inherit
+            system
+            assets
+            pkgsStable
+            pkgsMaster
+            sops-nix
+            telescope-orgmode;
         };
       };
     in {

@@ -67,6 +67,16 @@
 
   fonts.fontconfig.enable = true;
 
+  sops.secrets.github-ro-token = {};
+
+  sops.templates."nix-access-tokens.conf".content = ''
+    access-tokens = github.com=${config.sops.placeholder.github-ro-token}
+  '';
+
+  xdg.configFile."nix/nix.conf".text = ''
+    !include ${config.sops.templates."nix-access-tokens.conf".path}
+  '';
+
   nixpkgs = {
     config = {
       allowUnfree = true;

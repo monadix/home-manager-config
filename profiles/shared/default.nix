@@ -115,10 +115,19 @@
     platformTheme.name = "qtct";
     style.name = "kvantum";
 
+    qt5ctSettings = {
+      Appearance = {
+        style = "kvantum";
+        icon_theme = "Nordzy-icon";
+        standard_dialogs = "xdgdesktopportal";
+      };
+    };
+
     qt6ctSettings = {
       Appearance = {
         style = "kvantum";
         icon_theme = "Nordzy-icon";
+        standard_dialogs = "xdgdesktopportal";
       };
     };
 

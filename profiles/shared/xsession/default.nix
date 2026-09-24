@@ -8,6 +8,12 @@
 {
   xsession = {
     enable = true;
+    
+    initExtra = ''
+      ${pkgs.feh}/bin/feh --bg-fill --no-fehbg ~/.wallpapers/nixos-nord-dark.png &
+      ${pkgs.lxqt.lxqt-policykit}/bin/lxqt-policykit-agent &
+    '';
+
     windowManager.xmonad = {
       enable = true;
       enableContribAndExtras = true;

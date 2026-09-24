@@ -2,7 +2,6 @@ import XMonad
 import XMonad.Hooks.EwmhDesktops
 import XMonad.Util.EZConfig
 import XMonad.Util.Parser
-import XMonad.Util.SpawnOnce
 import XMonad.Util.Ungrab
 
 import System.Random
@@ -40,11 +39,6 @@ changeVolume delta = spawn $ "pamixer " ++ command ++ " " ++ show (abs delta) ++
     command = if delta >= 0 then "-i" else "-d"
 
 
-myStartupHook :: X ()
-myStartupHook = do 
-  spawnOnce "feh --bg-fill --no-fehbg ~/.wallpapers/nixos-nord-dark.png"
-
-
 myLayout = tiled ||| Full ||| Mirror tiled
   where
     tiled = Tall nmaster delta ratio
@@ -65,7 +59,6 @@ main = xmonad . ewmh $ def
   , borderWidth = 1
 
   , layoutHook = myLayout
-  , startupHook = myStartupHook
   }
 
   `additionalKeys`

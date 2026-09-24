@@ -109,6 +109,30 @@
     };
   };
 
+  qt = {
+    enable = true;
+
+    platformTheme.name = "qtct";
+    style.name = "kvantum";
+
+    qt6ctSettings = {
+      Appearance = {
+        style = "kvantum";
+        icon_theme = "Nordzy-icon";
+      };
+    };
+
+    kvantum = {
+      enable = true;
+
+      settings.General.theme = "Nordic";
+
+      themes = [
+        pkgs.nordic
+      ];
+    };
+  };
+
   xdg.configFile."mimeapps.list".force = true;
   xdg.mimeApps = {
     enable = true;

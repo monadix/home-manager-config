@@ -7,7 +7,6 @@ import XMonad.Util.Ungrab
 import System.Random
 
 import Data.Char
-import Data.IORef
 import Data.Maybe
 import Data.Ord
 import Data.Time.Clock
@@ -15,18 +14,9 @@ import Data.Time.Format.ISO8601
 
 import qualified GHC.IO as IO
 
-keyboardLayouts :: [String]
-keyboardLayouts = ["us", "ru"]
-
-currentKeyboardLayout :: IORef Int
-currentKeyboardLayout = IO.unsafePerformIO $ newIORef 0
-{-# NOINLINE currentKeyboardLayout #-}
 
 changeKeyboardLayout :: X ()
-changeKeyboardLayout = do
-  layout <- liftIO $ readIORef currentKeyboardLayout
-  spawn $ "setxkbmap " ++ keyboardLayouts !! layout
-  liftIO $ modifyIORef' currentKeyboardLayout ((`mod` length keyboardLayouts) . succ)
+changeKeyboardLayout = spawn "xkb-switch -n"
 
 
 changeBrightness :: Float -> X ()

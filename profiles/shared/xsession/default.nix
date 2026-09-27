@@ -40,6 +40,40 @@
     };
   };
 
+  systemd.user.services.xscreensaver-keyboard-layout = {
+    Unit = {
+      Description = "Set US keyboard layout when XScreenSaver locks";
+      Requires = [ "xscreensaver.service" ];
+      After = [ "xscreensaver.service" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+
+    Service = {
+      ExecStart = pkgs.writeShellScript "xscreensaver-keyboard-layout" ''
+        ${pkgs.xscreensaver}/bin/xscreensaver-command --watch |
+        while read -r event _; do
+          if [ "$event" = LOCK ]; then
+            ${pkgs.xkb-switch}/bin/xkb-switch -s us
+          fi
+        done
+      '';
+
+      Restart = "on-failure";
+      RestartSec = 1;
+    };
+
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  home.packages = with pkgs; [
+    xkb-switch
+  ];
+
+  home.keyboard = {
+    layout = "us,ru";
+    variant = ",";
+  };
+
   home.pointerCursor = {
     enable = true;
     gtk.enable = true;

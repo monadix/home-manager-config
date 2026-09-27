@@ -173,6 +173,10 @@
       source = config.lib.file.mkOutOfStoreSymlink config.sops.templates."zed-editor-settings.json".path;
     };
 
+    # The Zed module's activation writes settings.json, but this file is a
+    # read-only link to the rendered sops template.
+    home.activation.zedSettingsActivation = lib.mkForce (lib.hm.dag.entryAfter [ "writeBoundary" ] "");
+
     systemd.user.services.bind-nix-dir = {
       Unit = {
         Description = "bind /nix directory to ~/.nix-mapped using bindfs";

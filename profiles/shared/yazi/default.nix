@@ -30,9 +30,10 @@ in
     cmd=${termfilechooser}/share/xdg-desktop-portal-termfilechooser/yazi-wrapper.sh
     create_help_file=1
     default_dir=${config.home.homeDirectory}/Downloads
-    env=TERMCMD=${lib.getExe pkgs.kitty} --class termfilechooser --title termfilechooser
+    env=TERMCMD=${lib.getExe pkgs.alacritty} --class termfilechooser --title termfilechooser -e
     env=PATH=${lib.makeBinPath [
       pkgs.yazi
+      pkgs.ueberzugpp
       pkgs.gnused
     ]}:$PATH
     open_mode=suggested

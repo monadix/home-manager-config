@@ -12,6 +12,12 @@
     initExtra = ''
       ${pkgs.feh}/bin/feh --bg-fill --no-fehbg ~/.wallpapers/nixos-nord-dark.png &
       ${pkgs.lxqt.lxqt-policykit}/bin/lxqt-policykit-agent &
+
+      ${pkgs.xidlehook}/bin/xidlehook \
+        --timer 1800 \
+        --not-when-audio \
+        'systemctl suspend' \
+        ''' &
     '';
 
     windowManager.xmonad = {

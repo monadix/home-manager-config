@@ -81,6 +81,8 @@ main = xmonad . ewmh $ def
   -- If we have such keys
   , ((noModMask, brightnessUpKey), changeBrightness 1)
   , ((noModMask, brightnessDownKey), changeBrightness (-1))
+  , ((noModMask .|. mod1Mask, brightnessUpKey), changeBrightness 10)
+  , ((noModMask .|. mod1Mask, brightnessDownKey), changeBrightness (-10))
 
   , ((noModMask, volumeUpKey), changeVolume 1)
   , ((noModMask, volumeDownKey), changeVolume (-1))
@@ -90,6 +92,8 @@ main = xmonad . ewmh $ def
   -- but we as well may not
   , ((myModMask .|. shiftMask, xK_equal), changeBrightness 1)
   , ((myModMask .|. shiftMask, xK_minus), changeBrightness (-1))
+  , ((myModMask .|. shiftMask .|. mod1Mask, xK_equal), changeBrightness 10)
+  , ((myModMask .|. shiftMask .|. mod1Mask, xK_minus), changeBrightness (-10))
 
   , ((myModMask .|. shiftMask, xK_bracketright), changeVolume 1)
   , ((myModMask .|. shiftMask, xK_bracketleft), changeVolume (-1))

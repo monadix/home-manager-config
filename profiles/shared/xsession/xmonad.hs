@@ -24,7 +24,7 @@ changeBrightness delta = spawn $ "xbacklight -inc " ++ show delta
 
 
 changeVolume :: Int -> X ()
-changeVolume delta = spawn $ "pamixer " ++ command ++ " " ++ show (abs delta) ++ " 2> ~/aboba.log"
+changeVolume delta = spawn $ "pamixer " ++ command ++ " " ++ show (abs delta)
   where
     command = if delta >= 0 then "-i" else "-d"
 

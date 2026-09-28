@@ -6,8 +6,6 @@
   pkgsStable,
   pkgsMaster,
 
-  sops-nix,
-
   ... 
 }:
 {
@@ -15,10 +13,6 @@
   home.homeDirectory = "/home/monadix";
 
   home.stateVersion = "23.05";
-
-  imports = [
-    sops-nix.homeManagerModules.sops
-  ];
 
   home.packages = with pkgs; [
     acpilight
@@ -77,12 +71,6 @@
     !include ${config.sops.templates."nix-access-tokens.conf".path}
   '';
 
-  nixpkgs = {
-    config = {
-      allowUnfree = true;
-    };
-  };
-  
   services.home-manager.autoExpire = {
     enable = true;
     frequency = "daily";

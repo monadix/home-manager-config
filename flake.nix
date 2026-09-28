@@ -52,12 +52,34 @@
       pkgsStable = importPkgsDefaultArgs nixpkgs-stable;
       pkgsMaster = importPkgsDefaultArgs nixpkgs-master;
 
-      profileWith = modules: home-manager.lib.homeManagerConfiguration {
+      mkHost = host: {
+        imports = [
+          (import-tree ./common)
+          sops-nix.homeManagerModules.sops
+          (import-tree host)
+        ];
+
+        _module.args = {
+          inherit
+            system
+            assets
+            pkgsStable
+            pkgsMaster
+            telescope-orgmode;
+        };
+      };
+
+      homeModules = {
+        conputer = mkHost ./hosts/conputer;
+        naumbuk = mkHost ./hosts/naumbuk;
+        ugly-rod = mkHost ./hosts/ugly-rod;
+        MDR024 = mkHost ./hosts/MDR024;
+      };
+
+      homeConfigurationWith = module: home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
 
-        modules = [
-          (import-tree ./profiles/shared)
-        ] ++ builtins.map import-tree modules;
+        modules = [ module ];
 
         extraSpecialArgs = {
           inherit
@@ -65,15 +87,14 @@
             assets
             pkgsStable
             pkgsMaster
-            sops-nix
             telescope-orgmode;
         };
       };
     in {
-      homeConfigurations = {
-        default = profileWith [ ./profiles/default ];
+      inherit homeModules;
 
-        naumbuk = profileWith [ ./profiles/naumbuk ];
-      };
+      homeConfigurations = builtins.mapAttrs
+        (_: homeConfigurationWith)
+        homeModules;
     };
 }

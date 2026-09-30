@@ -19,7 +19,19 @@
     age
     alsa-utils
     ayugram-desktop
-    codex
+    (codex.overrideAttrs (finalAttrs: _: {
+      version = "0.159.2";
+      src = fetchFromGitHub {
+        owner = "openai";
+        repo = "codex";
+        tag = "rust-v${finalAttrs.version}";
+        hash = "sha256-fYzQEit5MxsEZw/UaISMbEIsy5iaAcqb7ElEOq9eVgs=";
+      };
+      cargoDeps = rustPlatform.fetchCargoVendor {
+        inherit (finalAttrs) pname version src sourceRoot;
+        hash = "sha256-U20V8MkGJZd+qTOQETzqB25QJPYxJGV89LiR1kToW7A=";
+      };
+    }))
     dig
     vesktop
     dmenu

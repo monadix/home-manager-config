@@ -1,0 +1,52 @@
+name: Update NixOS home-config
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-nixos-home-config
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.repository == 'monadix/home-manager-config' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check update token
+        env:
+          UPDATE_TOKEN: ${{ secrets.NIXOS_CONFIG_TOKEN }}
+        run: |
+          if [ -z "$UPDATE_TOKEN" ]; then
+            echo '::error::Set NIXOS_CONFIG_TOKEN to a token with Contents read and write access to monadix/configuration-nix.'
+            exit 1
+          fi
+
+      - name: Check out NixOS configuration
+        uses: actions/checkout@v4
+        with:
+          repository: monadix/configuration-nix
+          ref: master
+          token: ${{ secrets.NIXOS_CONFIG_TOKEN }}
+
+      - uses: DeterminateSystems/nix-installer-action@v19
+
+      - name: Update home-config input
+        run: nix flake update home-config
+
+      - name: Commit and push lock file
+        run: |
+          if git diff --quiet -- flake.lock; then
+            echo 'home-config is already up to date.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add flake.lock
+          git commit -m 'chore: update home-config'
+          git push origin HEAD:master

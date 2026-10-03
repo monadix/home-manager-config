@@ -7,5 +7,12 @@
   };
 
   # Yazi uses this helper for image previews in Alacritty on X11.
-  home.packages = [ pkgs.ueberzugpp ];
+  home.packages = [
+    pkgs.ueberzugpp
+    pkgs.xdg-terminal-exec
+  ];
+
+  xdg.configFile."xdg-terminals.list".text = ''
+    Alacritty.desktop
+  '';
 }

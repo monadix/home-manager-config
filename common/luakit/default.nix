@@ -5,8 +5,8 @@ let
       owner = "monadix";
       repo = "luakit";
       # sandbox-webprocess-broker
-      rev = "93af69779e42c5aa4a7b69fe5530103569f74032";
-      hash = "sha256-JqfPUZCnnK6oXhMsEB9Kx+qgUQ3J33QMlrdJ/xaqJHA=";
+      rev = "1c7bd4056c685bd135d1a9e4c16d906994b5e495";
+      hash = "sha256-Jjx857l/WbCuZOVnFzTK/QE15KNowkLDMtrzPO30d+4=";
     };
   });
 in

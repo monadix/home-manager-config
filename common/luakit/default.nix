@@ -15,6 +15,10 @@ in
 
   home.sessionVariables.WEBKIT_A11Y_BUS_ADDRESS = "";
 
+  xdg.configFile."luakit/userconf.lua".text = ''
+    require("settings").webview.enable_media_stream = true
+  '';
+
   xdg.configFile."luakit/theme.lua".text = ''
     local theme = dofile("${luakit}/etc/xdg/luakit/theme.lua")
 

@@ -13,6 +13,8 @@ in
 {
   home.packages = [ luakit ];
 
+  home.sessionVariables.WEBKIT_A11Y_BUS_ADDRESS = "";
+
   xdg.configFile."luakit/theme.lua".text = ''
     local theme = dofile("${luakit}/etc/xdg/luakit/theme.lua")
 

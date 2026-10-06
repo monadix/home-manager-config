@@ -18,7 +18,10 @@ in
   xdg.configFile."luakit/userconf.lua".text = ''
     require("settings").application.prefer_dark_mode = true
     require("settings").webview.enable_media_stream = true
+    require("modules.session_autosave")
   '';
+
+  xdg.configFile."luakit/modules/session_autosave.lua".source = ./modules/session_autosave.lua;
 
   xdg.configFile."luakit/theme.lua".text = ''
     local theme = dofile("${luakit}/etc/xdg/luakit/theme.lua")

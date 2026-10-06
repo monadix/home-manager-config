@@ -16,6 +16,7 @@ in
   home.sessionVariables.WEBKIT_A11Y_BUS_ADDRESS = "";
 
   xdg.configFile."luakit/userconf.lua".text = ''
+    require("settings").application.prefer_dark_mode = true
     require("settings").webview.enable_media_stream = true
   '';
 

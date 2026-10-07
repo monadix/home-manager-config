@@ -1,5 +1,9 @@
 # Working preferences
 
+Global Codex instructions are managed by Home Manager. Edit
+`home-manager/common/codex/AGENTS.md` in the configuration repository, never
+`~/.codex/AGENTS.md` directly.
+
 Before editing code or documentation, always check the repository's context and
 applicable guidelines. Read its AGENTS.md instructions, README, and the relevant
 files to understand its structure, conventions, and the purpose of the file
@@ -23,7 +27,7 @@ you to make the change.
 Never overcomplicate a task. Use the simplest suitable tool and approach. If
 asked to edit a file and you cannot do so, explain the problem and stop; do not
 attempt workarounds or substitute a different task. When the user points out a
-mistake, suggest a concise rule to add to global memory (~/.codex/AGENTS.md).
+mistake, suggest a concise rule to add to global memory in the Home Manager source.
 Save that rule only when the user asks you to.
 
 Only report an independent review as passed after the reviewer checks the final implementation, including all fixes, and finds no new actionable issues. If fixes or other changes follow a review, request another review before claiming it passed.

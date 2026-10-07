@@ -1,21 +1,31 @@
+{ lib, pkgs, ... }:
+let
+  launcher = pkgs.writeTextFile {
+    name = "codex-launcher";
+    destination = "/bin/codex";
+    executable = true;
+    text = "#!${lib.getExe pkgs.nushell} --no-config-file\n"
+      + builtins.replaceStrings [ "@codex@" ] [ (lib.getExe pkgs.codex) ]
+        (builtins.readFile ./wrapper.nu);
+  };
+in
 {
   programs.codex = {
     enable = true;
+    package = pkgs.symlinkJoin {
+      name = "codex-${pkgs.codex.version}";
+      inherit (pkgs.codex) version meta;
+      paths = [ pkgs.codex ];
+      postBuild = ''
+        ln -sf ${launcher}/bin/codex "$out/bin/codex"
+      '';
+    };
     context = ./AGENTS.md;
 
-    settings = {
+    profiles.hm = {
       model = "gpt-6.1-sol";
       model_reasoning_effort = "medium";
       approvals_reviewer = "auto_review";
-
-      projects = {
-        "/home/monadix/FH/config/home-manager".trust_level = "trusted";
-        "/home/monadix/FH/config/nixos".trust_level = "trusted";
-        "/home/monadix/FH/config".trust_level = "trusted";
-        "/home/monadix/FH/xxx/os/dckr".trust_level = "trusted";
-        "/home/monadix/FH/external/luakit".trust_level = "trusted";
-        "/home/monadix".trust_level = "trusted";
-      };
 
       tui.vim_mode_default = true;
     };

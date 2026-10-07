@@ -1,10 +1,19 @@
 {
+  config,
   pkgs,
   telescope-orgmode,
   ...
 }:
 
 let
+  nvimOpen = pkgs.writeShellScript "nvim-open" ''
+    if [ -t 0 ] && [ -t 1 ]; then
+      exec ${config.programs.neovim.finalPackage}/bin/nvim -- "$@"
+    else
+      exec ${pkgs.xdg-terminal-exec}/bin/xdg-terminal-exec ${config.programs.neovim.finalPackage}/bin/nvim -- "$@"
+    fi
+  '';
+
   telescopeOrgmode = pkgs.vimUtils.buildVimPlugin {
     pname = "telescope-orgmode.nvim";
     version = "unstable";
@@ -13,6 +22,16 @@ let
   };
 in
 {
+  xdg.desktopEntries.nvim-terminal = {
+    name = "Neovim (terminal)";
+    exec = "${nvimOpen} %F";
+    icon = "nvim";
+    terminal = false; # The wrapper opens a terminal when needed.
+    mimeType = [ "text/plain" ];
+  };
+
+  xdg.mimeApps.defaultApplications."text/plain" = "nvim-terminal.desktop";
+
   programs.neovim = {
     enable = true;
 

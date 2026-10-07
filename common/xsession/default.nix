@@ -90,6 +90,8 @@
   };
 
   home.file = {
+    ".xmonad/xmonad-${pkgs.stdenv.hostPlatform.system}".force = true;
+
     ".wallpapers" = {
       source = lib.fileset.toSource {
         root = assets.images;

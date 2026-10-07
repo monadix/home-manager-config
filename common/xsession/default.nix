@@ -14,8 +14,8 @@
       ${pkgs.lxqt.lxqt-policykit}/bin/lxqt-policykit-agent &
 
       ${pkgs.xidlehook}/bin/xidlehook \
-        --timer 1800 \
         --not-when-audio \
+        --timer 1800 \
         'systemctl suspend' \
         ''' &
     '';
@@ -50,7 +50,7 @@
     Unit = {
       Description = "Set US keyboard layout when XScreenSaver locks";
       Requires = [ "xscreensaver.service" ];
-      After = [ "xscreensaver.service" ];
+      After = [ "graphical-session.target" "xscreensaver.service" ];
       PartOf = [ "graphical-session.target" ];
     };
 

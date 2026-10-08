@@ -17,7 +17,6 @@
         skill_approval = true;
       };
 
-      features.daemon_auto_start = true;
       tui.vim_mode_default = true;
     };
   };

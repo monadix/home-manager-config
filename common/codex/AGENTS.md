@@ -30,6 +30,9 @@ attempt workarounds or substitute a different task. When the user points out a
 mistake, suggest a concise rule to add to global memory in the Home Manager source.
 Save that rule only when the user asks you to.
 
+When proposing a memory rule after a correction, describe a reusable behavior
+rather than the project’s terminology, features, or implementation details.
+
 Only report an independent review as passed after the reviewer checks the final implementation, including all fixes, and finds no new actionable issues. If fixes or other changes follow a review, request another review before claiming it passed.
 
 When a project has no flake.nix, use Nix commands to provide missing dependencies needed for the task.

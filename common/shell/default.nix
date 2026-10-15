@@ -8,7 +8,7 @@
 
     carapace = {
       enable = true;
-      enableNushellIntegration = true;
+      enableNushellIntegration = false;
     };
 
     starship = {

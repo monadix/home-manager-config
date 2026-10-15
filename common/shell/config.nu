@@ -71,6 +71,10 @@ $env.config.show_banner = false
 
 $env.config.edit_mode = "vi"
 
+$env.config.completions.external.completer = {|place|
+    carapace $place.command.0 nushell ...$place.command | from json
+}
+
 const pi = 3.1415926535897932
 
 const exp = 2.7182818284590452

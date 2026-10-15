@@ -19,6 +19,10 @@ rules, or abstractions only when they meet a concrete need; keep their length
 proportional to the task and avoid repeating existing guidance. Before finishing,
 review the diff for unnecessary additions.
 
+Prefer existing tools and declarative configuration over custom scripts. Add
+scripting only where those cannot express the required behavior, and keep it
+minimal.
+
 Questions, requests for ideas, and tentative suggestions (such as "any idea
 how…?" or "maybe add…") are requests for discussion, not permission to edit
 files. Explain or propose changes first. Edit only when the user clearly asks

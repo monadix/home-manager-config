@@ -135,11 +135,11 @@
     enable = true;
 
     defaultApplications = {
-      "text/html" = "org.qutebrowser.qutebrowser.desktop";
-      "x-scheme-handler/http" = "org.qutebrowser.qutebrowser.desktop";
-      "x-scheme-handler/https" = "org.qutebrowser.qutebrowser.desktop";
-      "x-scheme-handler/about" = "org.qutebrowser.qutebrowser.desktop";
-      "x-scheme-handler/unknown" = "org.qutebrowser.qutebrowser.desktop";
+      "text/html" = "luakit.desktop";
+      "x-scheme-handler/http" = "luakit.desktop";
+      "x-scheme-handler/https" = "luakit.desktop";
+      "x-scheme-handler/about" = "luakit.desktop";
+      "x-scheme-handler/unknown" = "luakit.desktop";
 
       "application/pdf" = "org.gnome.Evince.desktop";
 

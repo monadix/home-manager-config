@@ -64,7 +64,7 @@ main = xmonad . ewmh $ def
     volumeDownKey     = mustParseKey "<XF86AudioLowerVolume>"
 
   in 
-  [ ((myModMask, xK_b), spawn "qutebrowser")
+  [ ((myModMask, xK_b), spawn "luakit")
 
   , ((shiftMask, xK_Alt_L), changeKeyboardLayout)
   , ((mod1Mask, xK_Shift_L), changeKeyboardLayout)

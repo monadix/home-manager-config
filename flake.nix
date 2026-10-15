@@ -93,6 +93,10 @@
     in {
       inherit homeModules;
 
+      devShells.${system}.pi-extensions = pkgs.mkShell {
+        packages = [ pkgs.nodejs ];
+      };
+
       homeConfigurations = builtins.mapAttrs
         (_: homeConfigurationWith)
         homeModules;

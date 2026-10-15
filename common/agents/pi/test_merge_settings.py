@@ -22,6 +22,37 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(merged["theme"], "light")
         self.assertEqual(module.merge_settings(merged, defaults), merged)
 
+    def test_bundle_replaces_old_npm_and_store_sources(self):
+        path = "/nix/store/new/lib/pi-extensions/node_modules/"
+        defaults = {"packages": [path + "pi-vim", path + "@gotgenes/pi-permission-system"]}
+        current = {"packages": [
+            "npm:pi-vim@0.14.2",
+            {"source": "npm:@gotgenes/pi-permission-system", "skills": []},
+            "/nix/store/old/lib/pi-extensions/node_modules/pi-vim",
+            "npm:unrelated",
+        ]}
+        self.assertEqual(module.merge_settings(current, defaults)["packages"],
+                         defaults["packages"] + ["npm:unrelated"])
+
+    def test_model_override_preserves_local_configuration(self):
+        current = {"providers": {
+            "local": {"models": [{"id": "existing"}]},
+            "cpa": {"modelOverrides": {
+                "other": {"contextWindow": 128000},
+                "gpt-6.1-sol": {"reasoning": True, "contextWindow": 128000},
+            }},
+        }}
+        merged = module.merge_models(current)
+        self.assertEqual(merged["providers"]["local"], current["providers"]["local"])
+        overrides = merged["providers"]["cpa"]["modelOverrides"]
+        self.assertEqual(overrides["gpt-6.1-sol"], {"reasoning": True, "contextWindow": 500000})
+        self.assertEqual(overrides["other"], {"contextWindow": 128000})
+        for model in ["gpt-6-sol", "gpt-5.6-sol", "gpt-5.5"]:
+            self.assertEqual(overrides[model]["contextWindow"], 272000)
+        self.assertEqual(len(overrides), 5)
+        self.assertEqual(module.merge_models(merged), merged)
+        self.assertEqual(current["providers"]["cpa"]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 128000)
+
     def test_activation_backup_mutability_and_invalid_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

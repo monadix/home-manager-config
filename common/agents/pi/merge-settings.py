@@ -9,13 +9,36 @@ import tempfile
 
 def merge_settings(current, defaults):
     packages = defaults["packages"]
-    names = {source.rsplit("@", 1)[0] for source in packages}
-    extras = [
-        source for source in current.get("packages", [])
-        if not isinstance(source, str)
-        or (source not in names and source.rsplit("@", 1)[0] not in names)
-    ]
+    def identity(source):
+        if isinstance(source, dict):
+            source = source.get("source", "")
+        if "/lib/pi-extensions/node_modules/" in source:
+            return source.split("/lib/pi-extensions/node_modules/", 1)[1]
+        if source.startswith("npm:"):
+            name = source[4:]
+            return name.rsplit("@", 1)[0] if "@" in name[1:] else name
+        return source
+
+    names = {identity(source) for source in packages}
+    extras = [source for source in current.get("packages", []) if identity(source) not in names]
     return {**current, **defaults, "packages": packages + extras}
+
+
+def merge_models(current):
+    providers = dict(current.get("providers", {}))
+    cpa = dict(providers.get("cpa", {}))
+    overrides = dict(cpa.get("modelOverrides", {}))
+    # Standard contexts advertised by Codex and CLIProxyAPI's model catalog.
+    for model, context in {
+        "gpt-6.1-sol": 500000,
+        "gpt-6-sol": 272000,
+        "gpt-5.6-sol": 272000,
+        "gpt-5.5": 272000,
+    }.items():
+        overrides[model] = {**overrides.get(model, {}), "contextWindow": context}
+    cpa["modelOverrides"] = overrides
+    providers["cpa"] = cpa
+    return {**current, "providers": providers}
 
 
 def main():
@@ -24,6 +47,7 @@ def main():
     defaults = json.loads(Path(sys.argv[2]).read_text())
     for name, values in (
         ("settings.json", defaults),
+        ("models.json", {}),
         ("extensions/pi-permission-classifier/config.json", {"timeoutMs": 30000}),
     ):
         path = directory / name
@@ -31,7 +55,12 @@ def main():
         if path.is_symlink():
             raise RuntimeError(f"Refusing to replace symlink: {path}")
         current = json.loads(path.read_text()) if path.exists() else {}
-        merged = merge_settings(current, values) if name == "settings.json" else {**values, **current}
+        if name == "settings.json":
+            merged = merge_settings(current, values)
+        elif name == "models.json":
+            merged = merge_models(current)
+        else:
+            merged = {**values, **current}
         if merged == current:
             continue
         if path.exists():

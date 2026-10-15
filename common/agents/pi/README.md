@@ -1,9 +1,28 @@
 # Pi: first migration stage
 
+`./default.nix` and `../codex.nix` both use `../AGENTS.md` as their global
+instructions. Edit that shared file to update both agents.
+
 Codex remains enabled. Pi 1.0.3 uses the native Home Manager module, shared
 working preferences, CPA (`gpt-6.1-sol`, medium reasoning), and pinned npm
-packages. No vLLM provider is declared or removed; existing `models.json`,
-authentication, sessions, web-search credentials, and extension state stay local.
+packages. No vLLM provider is declared or removed. Existing authentication,
+sessions, web-search credentials, and extension state stay local. Activation
+merges CPA context overrides into writable `models.json`, preserving all other
+providers and model metadata (and backing up the original privately).
+Defaults match Codex discovery and CLIProxyAPI's model catalog:
+
+| Model | Context tokens |
+| --- | ---: |
+| `gpt-6.1-sol` | 500,000 |
+| `gpt-6-sol` | 272,000 |
+| `gpt-5.6-sol` | 272,000 |
+| `gpt-5.5` | 272,000 |
+
+These use the standard windows, not optional extended-context maxima.
+This is advertised support, not a full-size live proxy request test. Pi's own
+compaction policy still reserves room within that window. The override uses
+Pi's native metadata layer because the pinned CPA extension restricts its own
+overrides to presets that exclude 500,000.
 
 `pi-vim` is the most adopted of the evaluated Vim editors.
 `@gotgenes/pi-permission-system` has substantially more adoption than the
@@ -27,10 +46,20 @@ The classifier configuration is seeded as writable, so `/permission-model`
 can persist a reviewer selection. Malformed JSON and symlinks are rejected
 rather than overwritten. Do not activate while Pi is saving its settings.
 
-Pi resolves/downloads the pinned npm packages on startup; these are not
-Nix-packaged or vendored. Select an available CPA model with `/model` if the
-configured default is unavailable. CPA availability was checked against the
-local discovery cache, not a live authenticated request.
+Extensions are built into the Nix store from `extensions/package-lock.json`
+using `importNpmLock`; Pi loads their local package directories without runtime
+npm downloads. Host-provided Pi peer libraries are not installed into the bundle.
+Activation replaces previous npm declarations and old bundle paths for these
+extensions, preserving unrelated packages. `pi update` does not update this bundle.
+
+Run `just update` from the repository to update `flake.lock` and all extension
+versions. To update only extensions, run `just update-pi-extensions`. The latter
+uses Node from the pinned nixpkgs development shell and refreshes the npm lockfile
+without installing packages into the checkout. Dependency integrity hashes come
+from the lockfile; no separate Nix hash needs updating. Review the lockfile diff,
+build the activation package, and commit the locks before deploying to other hosts.
+Updates do not activate or commit automatically; runtime compatibility still
+needs validation. Select an available CPA model with `/model` if needed.
 
 ## Optional SOPS CPA key
 
@@ -48,6 +77,21 @@ provided `CLIPROXYAPI_API_KEY` remains usable without adding a secret. Do not
 put plaintext keys in Nix configuration. The CPA endpoint is a private LAN URL
 shared by all hosts; change it here if their network topology differs.
 
+## Context7 and search credentials
+
+Pi's native MCP client connects to Context7 using the existing SOPS
+`context7-api-key` secret (also used by OpenCode). The MCP header runs `cat`
+on the decrypted secret at connection time; no plaintext key enters the store.
+`mcp.json` is HM-managed; change server declarations here rather than with
+`pi mcp add`. Check connectivity with `pi mcp list` after activation.
+
+Add an encrypted `exa-api-key` entry using `sops secrets/secrets.yaml`.
+The Pi wrapper reads this secret at launch into `EXA_API_KEY`, which takes
+precedence over `exaApiKey` in the existing private local
+`~/.pi/agent/web-search.json`. Missing/empty secrets prevent startup. The local
+file remains untouched, preserving other search settings; its old plaintext
+key can be removed after validating the SOPS-backed setup.
+
 ## Validation before retiring Codex
 
 After activation, start a **new** Pi session and confirm:
@@ -63,7 +107,7 @@ After activation, start a **new** Pi session and confirm:
 - Web tools and other extension tools pass through the permission gate.
   Exercise subagents only when explicitly requested. This permission system
   documents native child forwarding for `@gotgenes/pi-subagents`, **not** the
-  existing `pi-subagents@0.70.0`; child coverage is not yet verified.
+  separately published `pi-subagents`; child coverage is not yet verified.
 
 In-tree file reads/writes are allowed; bash and unknown tool surfaces are reviewed.
 Outside-directory access prompts rather than being classified. Sensitive paths

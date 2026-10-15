@@ -31,6 +31,7 @@
     pkgsStable.gimp
     gnumake
     htop
+    just
     krita
     pkgsStable.libreoffice
     mpv

@@ -1,8 +1,8 @@
 # Working preferences
 
-Global Codex instructions are managed by Home Manager. Edit
-`home-manager/common/codex/AGENTS.md` in the configuration repository, never
-`~/.codex/AGENTS.md` directly.
+Global Codex and Pi instructions are managed by Home Manager from one shared
+file. Edit `home-manager/common/agents/AGENTS.md` in the configuration repository,
+never `~/.codex/AGENTS.md` or `~/.pi/agent/AGENTS.md` directly.
 
 Before editing code or documentation, always check the repository's context and
 applicable guidelines. Read its AGENTS.md instructions, README, and the relevant

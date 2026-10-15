@@ -19,6 +19,10 @@ rules, or abstractions only when they meet a concrete need; keep their length
 proportional to the task and avoid repeating existing guidance. Before finishing,
 review the diff for unnecessary additions.
 
+Prefer existing tools and declarative configuration over custom scripts. Add
+scripting only where those cannot express the required behavior, and keep it
+minimal.
+
 Questions, requests for ideas, and tentative suggestions (such as "any idea
 how…?" or "maybe add…") are requests for discussion, not permission to edit
 files. Explain or propose changes first. Edit only when the user clearly asks
@@ -38,5 +42,7 @@ Only report an independent review as passed after the reviewer checks the final 
 When a project has no flake.nix, use Nix commands to provide missing dependencies needed for the task.
 
 Run local checks appropriate to the change. Request independent review when the user explicitly asks, or when changes must satisfy concrete compatibility requirements, substantially alter code structure, or affect performance- or correctness-critical behavior. Review against those requirements and risks. Routine, low-impact edits do not require independent review.
+
+For changes based on an approved visual reference, compare every affected screen in the running application against that reference before reporting completion; functional checks alone do not establish visual fidelity.
 
 Run available local diagnostics before asking the user to run them.

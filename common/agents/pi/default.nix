@@ -100,7 +100,7 @@ in
     };
 
     # Reapply declared defaults, preserving other runtime settings and packages.
-    # Merge only the CPA context override; preserve existing local providers.
+    # Register the direct reviewer and merge CPA context overrides without replacing local providers.
     home.activation.piSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${pkgs.python3}/bin/python3 ${./merge-settings.py} \
         ${lib.escapeShellArg agentDir} ${settings}

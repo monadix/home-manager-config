@@ -1,0 +1,27 @@
+--- a/src/extension.ts
++++ b/src/extension.ts
+@@ -41,3 +41,4 @@
++import { reviewerConfig } from "./classifier-routing.mjs";
+ import type { Model } from "@earendil-works/pi-ai";
+ import { complete as realComplete } from "@earendil-works/pi-ai/compat";
+ import {
+@@ -176,6 +177,3 @@
+   function effectiveConfig(): ClassifierConfig | undefined {
+-    if (!config || !override) {
+-      return config;
+-    }
+-    return { ...config, provider: override.provider, model: override.model };
++    return reviewerConfig(config, override, sessionModel?.provider);
+   }
+@@ -239,5 +237,5 @@
+     ui?.setStatus(
+       STATUS_KEY,
+-      formatJudgeStatus(resolveJudge(override, config, registry, sessionModel)) +
++      formatJudgeStatus(resolveJudge(override, effectiveConfig(), registry, sessionModel)) +
+         formatHealthSuffix(health, breaker.remainingMs()),
+     );
+@@ -278,3 +276,3 @@
+     createPermissionModelCommand({
+-      getConfig: () => config,
++      getConfig: effectiveConfig,
+       getOverride: () => override,

@@ -42,9 +42,16 @@ if already present. Do not remove authentication or model files.
 Activation merges declared settings into writable `settings.json`, preserving
 unrelated settings and packages and saving the original as `settings.json.pre-hm`
 (mode 0600). Declared defaults and package pins are reapplied on each activation.
-The classifier configuration is seeded as writable, so `/permission-model`
-can persist a reviewer selection. Malformed JSON and symlinks are rejected
-rather than overwritten. Do not activate while Pi is saving its settings.
+The classifier configuration stays writable, but activation reapplies
+`cpa/codex-auto-review` as the default. A small patch in the pinned extension
+bundle routes that default to `openai/codex-auto-review` while the coding
+provider is `openai`, and back to CPA for every other provider. Routing follows
+model switches; a missing reviewer or authentication still defers to you, not
+to another provider. Explicit `--permission-model` overrides retain precedence.
+Other `/permission-model` selections persist until activation reapplies the default.
+Activation also registers the direct reviewer in writable `models.json`, since
+Pi's public catalog omits it. Malformed JSON and symlinks are rejected rather
+than overwritten. Do not activate while Pi is saving its settings.
 
 Extensions are built into the Nix store from `extensions/package-lock.json`
 using `importNpmLock`; Pi loads their local package directories without runtime
@@ -99,8 +106,9 @@ After activation, start a **new** Pi session and confirm:
 - No extension load errors; `/model` lists CPA models and a prompt succeeds.
 - Vim Insert/Normal/Visual editing works; `/settings` changes persist.
 - `/permission-system show` lists the classifier chain; the footer shows
-  `judge:session`. `/permission-model` can choose a separate authenticated,
-  tool-calling reviewer without changing the session model.
+  `judge:openai/codex-auto-review` for an `openai` coding model and
+  `judge:cpa/codex-auto-review` otherwise, including after model switches.
+  Both reviewers need their own provider's authentication.
 - A benign bash request is automatically approved; dangerous/uncertain requests
   are denied or prompt. Reviewer timeout/auth failure must fall back to prompting
   (or blocking without UI), never silently allow.

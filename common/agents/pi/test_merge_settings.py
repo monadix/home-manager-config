@@ -53,6 +53,17 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(module.merge_models(merged), merged)
         self.assertEqual(current["providers"]["cpa"]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 128000)
 
+    def test_direct_reviewer_preserves_existing_models_and_metadata(self):
+        current = {"providers": {"openai": {"headers": {"custom": "value"}, "models": [
+            {"id": "other"}, {"id": "codex-auto-review", "contextWindow": 64000},
+        ]}}}
+        merged = module.merge_models(current)
+        self.assertEqual(merged["providers"]["openai"], current["providers"]["openai"])
+        registered = module.merge_models({})["providers"]["openai"]["models"]
+        self.assertEqual(registered[0]["id"], "codex-auto-review")
+        self.assertEqual(registered[0]["api"], "openai-responses")
+        self.assertEqual(module.merge_models(merged), merged)
+
     def test_activation_backup_mutability_and_invalid_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -70,9 +81,11 @@ class SettingsTests(unittest.TestCase):
             self.assertEqual(stat.S_IMODE(backup.stat().st_mode), 0o600)
             self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
             classifier = directory / "extensions/pi-permission-classifier/config.json"
-            classifier.write_text('{"provider": "cpa", "model": "custom"}')
+            classifier.write_text('{"provider": "local", "model": "custom", "timeoutMs": 15000}')
             subprocess.run(command, check=True)
-            self.assertEqual(json.loads(classifier.read_text())["model"], "custom")
+            self.assertEqual(json.loads(classifier.read_text()), {
+                "provider": "cpa", "model": "codex-auto-review", "timeoutMs": 15000,
+            })
             self.assertEqual(backup.read_text(), original)
             path.write_text("invalid")
             self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)

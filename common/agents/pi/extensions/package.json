@@ -3,9 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@gotgenes/pi-permission-system": "latest",
+    "@fadouse/pi-permission": "0.1.2",
     "pi-cliproxyapi-provider": "latest",
-    "pi-permission-classifier": "latest",
     "pi-subagents": "latest",
     "pi-vim": "latest",
     "pi-web-access": "latest"

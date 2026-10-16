@@ -11,9 +11,7 @@ let
     defaultModel = "gpt-6.1-sol";
     defaultThinkingLevel = "medium";
     npmCommand = [ "${pkgs.nodejs}/bin/npm" ];
-    # Classifier must register before the permission system's session_start.
-    packages = map (name: "${extensions}/lib/pi-extensions/node_modules/${name}")
-      ([ "pi-permission-classifier" ] ++ builtins.filter (name: name != "pi-permission-classifier") extensionNames);
+    packages = map (name: "${extensions}/lib/pi-extensions/node_modules/${name}") extensionNames;
   };
   package = pkgs.symlinkJoin {
     name = "pi-with-secrets-${pkgs.pi-coding-agent.version}";
@@ -44,7 +42,7 @@ in
     programs.pi-coding-agent = {
       enable = true;
       inherit package;
-      extraPackages = [ pkgs.nodejs ];
+      extraPackages = [ pkgs.nodejs pkgs.bubblewrap ];
       context = ../AGENTS.md;
       # settings.json stays writable for /settings, /model and pi install.
     };
@@ -72,35 +70,25 @@ in
         authRequired = true;
         authHeader = true;
       };
-      ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
-        authorizerChain = [ "classifier" ];
-        permission = {
-          "*" = "ask";
-          path = {
-            "*" = "allow";
-            "*.env" = "deny";
-            "*.env.*" = "deny";
-            "*.env.example" = "allow";
-            "~/.ssh/*" = "deny";
-            "~/.config/sops/*" = "deny";
-            "~/.pi/agent/auth.json" = "deny";
-            "~/.codex/auth.json" = "deny";
-            "${config.sops.defaultSymlinkPath}/*" = "deny";
-          };
-          read = "allow";
-          grep = "allow";
-          find = "allow";
-          ls = "allow";
-          write = "allow";
-          edit = "allow";
-          bash = "ask";
-          external_directory = "ask";
-        };
+      ".pi/agent/permissions.json".text = builtins.toJSON {
+        sandbox_mode = "workspace-write";
+        approval_policy = "on-request";
+        approvals_reviewer = "auto_review";
+        auto_review_model = "cpa/codex-auto-review";
+        auto_review_use_model = true;
+        auto_review_timeout_ms = 45000;
+        network_access = false;
+        allow_tmp_write = true;
+        fail_closed_without_sandbox = true;
+        status_line = true;
+        # /nix is already visible read-only; do not turn it into a writable root.
+        add_dir = [ ];
+        approved_prefixes = [ ];
       };
     };
 
     # Reapply declared defaults, preserving other runtime settings and packages.
-    # Register the direct reviewer and merge CPA context overrides without replacing local providers.
+    # Remove retired permission packages and merge CPA context overrides without replacing local providers.
     home.activation.piSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${pkgs.python3}/bin/python3 ${./merge-settings.py} \
         ${lib.escapeShellArg agentDir} ${settings}

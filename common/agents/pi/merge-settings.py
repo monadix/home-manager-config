@@ -19,7 +19,9 @@ def merge_settings(current, defaults):
             return name.rsplit("@", 1)[0] if "@" in name[1:] else name
         return source
 
-    names = {identity(source) for source in packages}
+    names = {identity(source) for source in packages} | {
+        "@gotgenes/pi-permission-system", "pi-permission-classifier",
+    }
     extras = [source for source in current.get("packages", []) if identity(source) not in names]
     return {**current, **defaults, "packages": packages + extras}
 
@@ -38,14 +40,6 @@ def merge_models(current):
         overrides[model] = {**overrides.get(model, {}), "contextWindow": context}
     cpa["modelOverrides"] = overrides
     providers["cpa"] = cpa
-    openai = dict(providers.get("openai", {}))
-    models = list(openai.get("models", []))
-    if not any(model.get("id") == "codex-auto-review" for model in models):
-        # Available through subscription OAuth but absent from Pi's public catalog.
-        models.append({"id": "codex-auto-review", "name": "Codex Auto Review",
-                       "api": "openai-responses", "reasoning": False})
-    openai["models"] = models
-    providers["openai"] = openai
     return {**current, "providers": providers}
 
 
@@ -56,7 +50,6 @@ def main():
     for name, values in (
         ("settings.json", defaults),
         ("models.json", {}),
-        ("extensions/pi-permission-classifier/config.json", {"timeoutMs": 30000}),
     ):
         path = directory / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -65,10 +58,8 @@ def main():
         current = json.loads(path.read_text()) if path.exists() else {}
         if name == "settings.json":
             merged = merge_settings(current, values)
-        elif name == "models.json":
-            merged = merge_models(current)
         else:
-            merged = {**values, **current, "provider": "cpa", "model": "codex-auto-review"}
+            merged = merge_models(current)
         if merged == current:
             continue
         if path.exists():

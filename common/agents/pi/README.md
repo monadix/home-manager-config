@@ -3,7 +3,7 @@
 `./default.nix` and `../codex.nix` both use `../AGENTS.md` as their global
 instructions. Edit that shared file to update both agents.
 
-Codex remains enabled. Pi 1.0.3 uses the native Home Manager module, shared
+Codex remains enabled. Pi uses the native Home Manager module, shared
 working preferences, CPA (`gpt-6.1-sol`, medium reasoning), and pinned npm
 packages. No vLLM provider is declared or removed. Existing authentication,
 sessions, web-search credentials, and extension state stay local. Activation
@@ -24,12 +24,9 @@ compaction policy still reserves room within that window. The override uses
 Pi's native metadata layer because the pinned CPA extension restricts its own
 overrides to presets that exclude 500,000.
 
-`pi-vim` is the most adopted of the evaluated Vim editors.
-`@gotgenes/pi-permission-system` has substantially more adoption than the
-other evaluated approval gates. `pi-permission-classifier` adds automatic
-allow/deny/defer review; the first-party model judge is deny-focused instead.
-These choices are based on npm downloads and repository activity, not a
-security audit. Only one editor replacement is enabled.
+`pi-vim` provides Vim editing. `@fadouse/pi-permission` 0.1.2 replaces the old
+permission system and classifier: Bash runs in a native bubblewrap sandbox,
+with CPA-backed review for approval requests. Only one permission stack is enabled.
 
 ## Activation and ownership
 
@@ -42,16 +39,11 @@ if already present. Do not remove authentication or model files.
 Activation merges declared settings into writable `settings.json`, preserving
 unrelated settings and packages and saving the original as `settings.json.pre-hm`
 (mode 0600). Declared defaults and package pins are reapplied on each activation.
-The classifier configuration stays writable, but activation reapplies
-`cpa/codex-auto-review` as the default. A small patch in the pinned extension
-bundle routes that default to `openai/codex-auto-review` while the coding
-provider is `openai`, and back to CPA for every other provider. Routing follows
-model switches; a missing reviewer or authentication still defers to you, not
-to another provider. Explicit `--permission-model` overrides retain precedence.
-Other `/permission-model` selections persist until activation reapplies the default.
-Activation also registers the direct reviewer in writable `models.json`, since
-Pi's public catalog omits it. Malformed JSON and symlinks are rejected rather
-than overwritten. Do not activate while Pi is saving its settings.
+Activation also removes retired `@gotgenes/pi-permission-system` and
+`pi-permission-classifier` declarations, including old Nix bundle paths, without
+deleting their local state. `permissions.json` is HM-managed; project overrides
+written by `/permission` take precedence. Malformed runtime JSON and symlinks
+are rejected rather than overwritten. Do not activate while Pi is saving its settings.
 
 Extensions are built into the Nix store from `extensions/package-lock.json`
 using `importNpmLock`; Pi loads their local package directories without runtime
@@ -99,27 +91,43 @@ precedence over `exaApiKey` in the existing private local
 file remains untouched, preserving other search settings; its old plaintext
 key can be removed after validating the SOPS-backed setup.
 
-## Validation before retiring Codex
+## Sandbox and review
+
+Defaults are `workspace-write`, `on-request`, and `auto_review` using
+`cpa/codex-auto-review`, independent of the coding model. Low-risk reviews allow
+automatically; higher-risk/uncertain reviews and reviewer failures ask you
+interactively, or block without a UI. The reviewer sees the operation and local
+risk hints, not the conversation. Ordinary sandboxed commands need no review.
+
+Bubblewrap is on Pi's PATH. Bash has a read-only root, writable cwd/temp, and
+isolated networking. `/nix/store` is already readable/executable: **do not add
+`/nix` to `add_dir`**, which grants writes. The host Nix daemon socket remains
+reachable, allowing daemon-mediated builds/downloads despite network isolation.
+Client cache writes outside cwd/temp may still need narrow exemptions.
+
+This is Bash isolation, not whole-agent isolation. `write`/`edit` use path checks;
+reads and inherited environment are not secret-isolated. The old secret-path
+denies are gone. MCP/extension clients and external subagents are not automatically
+sandboxed. Project `.pi/permissions.json` can weaken global defaults; inspect it
+before trusting a checkout. Keep `.pi/permissions-audit.jsonl` private.
+
+## Validation
+
+Local checks (no provider requests or activation):
+
+```bash
+python3 -m unittest discover -s common/agents/pi -p 'test_*.py'
+nix build .#homeConfigurations.MDR024.activationPackage
+```
 
 After activation, start a **new** Pi session and confirm:
 
-- No extension load errors; `/model` lists CPA models and a prompt succeeds.
-- Vim Insert/Normal/Visual editing works; `/settings` changes persist.
-- `/permission-system show` lists the classifier chain; the footer shows
-  `judge:openai/codex-auto-review` for an `openai` coding model and
-  `judge:cpa/codex-auto-review` otherwise, including after model switches.
-  Both reviewers need their own provider's authentication.
-- A benign bash request is automatically approved; dangerous/uncertain requests
-  are denied or prompt. Reviewer timeout/auth failure must fall back to prompting
-  (or blocking without UI), never silently allow.
-- Web tools and other extension tools pass through the permission gate.
-  Exercise subagents only when explicitly requested. This permission system
-  documents native child forwarding for `@gotgenes/pi-subagents`, **not** the
-  separately published `pi-subagents`; child coverage is not yet verified.
+- `/permission` reports `workspace-write/on-request/auto_review` and the CPA reviewer.
+- No extension load errors; CPA inference, Vim editing and web tools still work.
+- A project write succeeds; an outside write and direct network access are blocked
+  unless explicitly approved. Low-risk escalations are reviewed automatically.
+- Higher-risk requests and reviewer failure offer a user decision; headless failure
+  blocks. Do not approve real destructive operations merely to test the dialog.
+- Nix evaluation/build works through the daemon; inspect any requested exemptions.
 
-In-tree file reads/writes are allowed; bash and unknown tool surfaces are reviewed.
-Outside-directory access prompts rather than being classified. Sensitive paths
-are denied by deterministic rules. Review logs can contain tool payloads:
-handle them privately. This is an approval workflow, **not an OS sandbox**;
-processes and child agents may not inherit the gate. Do not retire Codex until
-these interactive and headless behavior checks pass.
+Local checks do not establish live reviewer or child-agent sandbox behavior.

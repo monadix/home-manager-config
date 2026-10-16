@@ -57,6 +57,8 @@
     # fonts
     corefonts
     vista-fonts
+    nerd-fonts.jetbrains-mono
+    nerd-fonts.symbols-only
   ];
 
   fonts.fontconfig.enable = true;

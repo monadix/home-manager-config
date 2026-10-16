@@ -47,7 +47,11 @@ are rejected rather than overwritten. Do not activate while Pi is saving its set
 
 Extensions are built into the Nix store from `extensions/package-lock.json`
 using `importNpmLock`; Pi loads their local package directories without runtime
-npm downloads. Host-provided Pi peer libraries are not installed into the bundle.
+npm downloads. Host-provided Pi peer libraries are linked from the same Pi runtime,
+not installed as separate copies. An offline build check imports them from the
+permission extension's location to catch native ESM resolution failures. The bundle
+patches the permission reviewer's legacy `completeSimple` import to Pi 1.2's public
+`pi-ai/compat` entrypoint.
 Activation replaces previous npm declarations and old bundle paths for these
 extensions, preserving unrelated packages. `pi update` does not update this bundle.
 

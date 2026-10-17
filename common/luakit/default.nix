@@ -1,13 +1,18 @@
 { pkgs, ... }:
 let
-  luakit = pkgs.luakit.overrideAttrs (_: {
+  luakit = pkgs.luakit.overrideAttrs (oldAttrs: {
     src = pkgs.fetchFromGitHub {
       owner = "monadix";
       repo = "luakit";
       # sandbox-webprocess-broker
-      rev = "1c7bd4056c685bd135d1a9e4c16d906994b5e495";
-      hash = "sha256-Jjx857l/WbCuZOVnFzTK/QE15KNowkLDMtrzPO30d+4=";
+      rev = "39232d48c4e167d1c9612def71a983e2e2bbe3db";
+      hash = "sha256-wI+DxNyoJXfnQZIAF7rCbWrSsvc2Y6zkj6glCqjcSUY=";
     };
+    preFixup = (oldAttrs.preFixup or "") + ''
+      gappsWrapperArgs+=(
+        --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "${pkgs.pipewire}/lib/gstreamer-1.0"
+      )
+    '';
   });
 in
 {
@@ -19,9 +24,11 @@ in
     require("settings").application.prefer_dark_mode = true
     require("settings").webview.enable_media_stream = true
     require("modules.session_autosave")
+    require("modules.media_permissions")
   '';
 
   xdg.configFile."luakit/modules/session_autosave.lua".source = ./modules/session_autosave.lua;
+  xdg.configFile."luakit/modules/media_permissions.lua".source = ./modules/media_permissions.lua;
 
   xdg.configFile."luakit/theme.lua".text = ''
     local theme = dofile("${luakit}/etc/xdg/luakit/theme.lua")

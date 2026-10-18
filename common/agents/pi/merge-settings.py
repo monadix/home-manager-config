@@ -20,7 +20,7 @@ def merge_settings(current, defaults):
         return source
 
     names = {identity(source) for source in packages} | {
-        "@gotgenes/pi-permission-system", "pi-permission-classifier",
+        "@fadouse/pi-permission", "pi-permission-classifier",
     }
     extras = [source for source in current.get("packages", []) if identity(source) not in names]
     return {**current, **defaults, "packages": packages + extras}

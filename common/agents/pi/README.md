@@ -1,4 +1,4 @@
-# Pi: first migration stage
+# Pi
 
 `./default.nix` and `../codex.nix` both use `../AGENTS.md` as their global
 instructions. Edit that shared file to update both agents.
@@ -24,9 +24,12 @@ compaction policy still reserves room within that window. The override uses
 Pi's native metadata layer because the pinned CPA extension restricts its own
 overrides to presets that exclude 500,000.
 
-`pi-vim` provides Vim editing. `@fadouse/pi-permission` 0.1.2 replaces the old
-permission system and classifier: Bash runs in a native bubblewrap sandbox,
-with CPA-backed review for approval requests. Only one permission stack is enabled.
+`pi-vim` provides Vim editing. The permission stack is
+`@gotgenes/pi-permission-system` 40.2.2, `@mzwing/pi-permission-auto-review`
+0.9.1, and [pi-scope-sandbox](https://github.com/monadix/pi-scope-sandbox) pinned
+to commit `60d50c7`. The permission system owns policy and prompts, the reviewer
+uses session context, and the sandbox confines Bash. The retired fadouse wrapper
+and classifier are not loaded alongside them.
 
 ## Activation and ownership
 
@@ -39,19 +42,25 @@ if already present. Do not remove authentication or model files.
 Activation merges declared settings into writable `settings.json`, preserving
 unrelated settings and packages and saving the original as `settings.json.pre-hm`
 (mode 0600). Declared defaults and package pins are reapplied on each activation.
-Activation also removes retired `@gotgenes/pi-permission-system` and
+Activation removes retired `@fadouse/pi-permission` and
 `pi-permission-classifier` declarations, including old Nix bundle paths, without
-deleting their local state. `permissions.json` is HM-managed; project overrides
-written by `/permission` take precedence. Malformed runtime JSON and symlinks
-are rejected rather than overwritten. Do not activate while Pi is saving its settings.
+deleting their local state. HM manages the three global files under
+`~/.pi/agent/extensions/{pi-permission-system,pi-permission-auto-review,pi-scope-sandbox}/config.json`.
+The old HM-owned `permissions.json` link is no longer declared; old project
+`.pi/permissions.json` files are not used by this stack. Back up existing files
+privately if HM reports ownership collisions; do not delete authentication or
+extension state. Malformed runtime settings JSON and symlinks are rejected rather
+than overwritten. Do not activate while Pi is saving its settings.
 
-Extensions are built into the Nix store from `extensions/package-lock.json`
-using `importNpmLock`; Pi loads their local package directories without runtime
-npm downloads. Host-provided Pi peer libraries are linked from the same Pi runtime,
-not installed as separate copies. An offline build check imports them from the
-permission extension's location to catch native ESM resolution failures. The bundle
-patches the permission reviewer's legacy `completeSimple` import to Pi 1.2's public
-`pi-ai/compat` entrypoint.
+Registry extensions are built into the Nix store from `extensions/package-lock.json`
+using `importNpmLock`. The unpublished sandbox is fetched from GitHub with a fixed
+revision and content hash in `extensions/_bundle.nix`, then included in the same
+bundle. Pi loads local package directories without runtime npm downloads.
+Lifecycle scripts are disabled. Host-provided Pi peers are linked from the same
+runtime rather than installed as separate copies. Offline build checks exercise
+native peer imports, load the real permission/reviewer/sandbox stack in an isolated
+SDK session, and verify required-child registration without model calls or Bash
+execution. No fadouse compatibility patch remains.
 Activation replaces previous npm declarations and old bundle paths for these
 extensions, preserving unrelated packages. `pi update` does not update this bundle.
 
@@ -62,7 +71,10 @@ without installing packages into the checkout. Dependency integrity hashes come
 from the lockfile; no separate Nix hash needs updating. Review the lockfile diff,
 build the activation package, and commit the locks before deploying to other hosts.
 Updates do not activate or commit automatically; runtime compatibility still
-needs validation. Select an available CPA model with `/model` if needed.
+needs validation. Security-stack versions are pinned exactly, so upgrading them
+requires editing `extensions/package.json` and refreshing its lock. Update the
+sandbox's revision/hash in `_bundle.nix` separately after reviewing its changes.
+Select an available CPA model with `/model` if needed.
 
 ## Optional SOPS CPA key
 
@@ -97,23 +109,35 @@ key can be removed after validating the SOPS-backed setup.
 
 ## Sandbox and review
 
-Defaults are `workspace-write`, `on-request`, and `auto_review` using
-`cpa/codex-auto-review`, independent of the coding model. Low-risk reviews allow
-automatically; higher-risk/uncertain reviews and reviewer failures ask you
-interactively, or block without a UI. The reviewer sees the operation and local
-risk hints, not the conversation. Ordinary sandboxed commands need no review.
+Workspace file tools are allowed, with external-directory access requiring
+approval. Bash, scope exceptions, and otherwise-unconfigured tools use `ask`.
+The `auto-review` authorizer uses `cpa/codex-auto-review` (low reasoning), independent
+of the coding model, with bounded active-branch session context. An authorizer may
+allow, deny, or defer; review failures defer to the human prompt. A headless request
+without an applicable approval fails closed. Path/external-directory boundaries
+can still require a human after model review. Unlike the old setup, ordinary Bash
+calls also enter the configured permission policy, potentially incurring review.
 
-Bubblewrap is on Pi's PATH. Bash has a read-only root, writable cwd/temp, and
-isolated networking. `/nix/store` is already readable/executable: **do not add
-`/nix` to `add_dir`**, which grants writes. The host Nix daemon socket remains
-reachable, allowing daemon-mediated builds/downloads despite network isolation.
-Client cache writes outside cwd/temp may still need narrow exemptions.
+The sandbox uses absolute Nix Bubblewrap/Bash paths. Bash has a read-only root,
+writable workspace, private scratch/HOME, filtered environment and no network by
+default. `writeRoot` or `network: true` requests pass through a separate nested
+permission gate for that exact call. Network grants enable all host networking,
+not just one domain. There is no unsandboxed fallback. `/nix/store` remains readable,
+but the host Nix daemon socket is deliberately hidden: daemon-mediated Nix builds
+must run from your terminal, not through a blanket exemption.
 
-This is Bash isolation, not whole-agent isolation. `write`/`edit` use path checks;
-reads and inherited environment are not secret-isolated. The old secret-path
-denies are gone. MCP/extension clients and external subagents are not automatically
-sandboxed. Project `.pi/permissions.json` can weaken global defaults; inspect it
-before trusting a checkout. Keep `.pi/permissions-audit.jsonl` private.
+Sandbox settings are global-only; project files cannot loosen the sandbox. The
+permission system still accepts trusted project policy, so inspect that policy
+before trusting a checkout. Missing `.pi` directories are created as protected
+mountpoints. `!`/`!!` is disabled; use the gated Bash tool or your terminal.
+
+This is Bash confinement, not whole-agent isolation. Native file tools retain
+host privileges and depend on path gates; MCP/other trusted extensions are not
+OS-contained. General filesystem reads outside explicit masks remain possible.
+Native pi-subagents children are required to load the sandbox, permission system
+and reviewer even when ambient extensions are excluded. Unsupported external
+runner/machine routes are rejected. This does not establish whole-process child
+confinement or end-to-end workflow compatibility.
 
 ## Validation
 
@@ -126,12 +150,14 @@ nix build .#homeConfigurations.MDR024.activationPackage
 
 After activation, start a **new** Pi session and confirm:
 
-- `/permission` reports `workspace-write/on-request/auto_review` and the CPA reviewer.
+- `/scope-sandbox` reports workspace-write mode, networking disabled, and the pinned binaries load.
+- `/permission-auto-review show` reports `cpa/codex-auto-review`.
 - No extension load errors; CPA inference, Vim editing and web tools still work.
-- A project write succeeds; an outside write and direct network access are blocked
-  unless explicitly approved. Low-risk escalations are reviewed automatically.
-- Higher-risk requests and reviewer failure offer a user decision; headless failure
-  blocks. Do not approve real destructive operations merely to test the dialog.
-- Nix evaluation/build works through the daemon; inspect any requested exemptions.
+- Workspace writes succeed; external writes and network scopes follow the expected
+  contextual review/human approval path. A later call does not inherit a scope grant.
+- Denial and reviewer failure do not execute an unapproved operation. Do not approve
+  real destructive operations merely to test the dialog.
+- Native child launches retain the required extensions; external runners are blocked.
+- Nix daemon access from sandboxed Bash fails rather than retrying outside isolation.
 
 Local checks do not establish live reviewer or child-agent sandbox behavior.

@@ -4,7 +4,7 @@ let
   json = pkgs.formats.json { };
   agentDir = "${config.home.homeDirectory}/.pi/agent";
   extensions = import ./extensions/_bundle.nix { inherit pkgs; };
-  extensionNames = builtins.attrNames (builtins.fromJSON (builtins.readFile ./extensions/package.json)).dependencies;
+  extensionNames = (builtins.attrNames (builtins.fromJSON (builtins.readFile ./extensions/package.json)).dependencies) ++ [ "pi-scope-sandbox" ];
   settings = json.generate "pi-settings-defaults.json" {
     theme = "dark";
     defaultProvider = "cpa";
@@ -70,20 +70,39 @@ in
         authRequired = true;
         authHeader = true;
       };
-      ".pi/agent/permissions.json".text = builtins.toJSON {
-        sandbox_mode = "workspace-write";
-        approval_policy = "on-request";
-        approvals_reviewer = "auto_review";
-        auto_review_model = "cpa/codex-auto-review";
-        auto_review_use_model = true;
-        auto_review_timeout_ms = 45000;
-        network_access = false;
-        allow_tmp_write = true;
-        fail_closed_without_sandbox = true;
-        status_line = true;
-        # /nix is already visible read-only; do not turn it into a writable root.
-        add_dir = [ ];
-        approved_prefixes = [ ];
+      ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
+        authorizerChain = [ "auto-review" ];
+        permission = {
+          "*" = "ask";
+          read = "allow";
+          write = "allow";
+          edit = "allow";
+          grep = "allow";
+          find = "allow";
+          ls = "allow";
+          path = "allow";
+          external_directory = "ask";
+          bash = "ask";
+          scope_sandbox_authorize = "ask";
+        };
+      };
+      ".pi/agent/extensions/pi-permission-auto-review/config.json".text = builtins.toJSON {
+        provider = "cpa";
+        model = "codex-auto-review";
+        reasoning = "low";
+        timeoutMs = 45000;
+        includeBaselinePolicy = true;
+      };
+      ".pi/agent/extensions/pi-scope-sandbox/config.json".text = builtins.toJSON {
+        mode = "workspace-write";
+        writeRoots = [ ];
+        denyRead = [ ];
+        envAllow = [ ];
+        network = false;
+        bwrap = "${pkgs.bubblewrap}/bin/bwrap";
+        shell = "${pkgs.bash}/bin/bash";
+        # Workflow children may omit ambient extensions; keep their reviewer.
+        childExtensions = [ "${extensions}/lib/pi-extensions/node_modules/@mzwing/pi-permission-auto-review/dist/index.js" ];
       };
     };
 

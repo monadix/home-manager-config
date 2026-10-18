@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@fadouse/pi-permission": "0.1.2",
+    "@gotgenes/pi-permission-system": "40.2.2",
+    "@mzwing/pi-permission-auto-review": "0.9.1",
     "pi-cliproxyapi-provider": "latest",
     "pi-subagents": "latest",
     "pi-vim": "latest",

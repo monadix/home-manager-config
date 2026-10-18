@@ -15,8 +15,8 @@ spec.loader.exec_module(module)
 
 class SettingsTests(unittest.TestCase):
     def test_package_pins_preserve_unrelated_entries(self):
-        defaults = {"defaultProvider": "cpa", "packages": ["npm:pi-vim@0.14.2", "npm:@fadouse/pi-permission@0.1.2"]}
-        current = {"theme": "light", "packages": ["npm:pi-vim", "npm:pi-vim@0.1.0", "npm:@gotgenes/pi-permission-system", "npm:pi-permission-classifier@0.5.2", "npm:other", {"source": "./local", "extensions": []}]}
+        defaults = {"defaultProvider": "cpa", "packages": ["npm:pi-vim@0.14.2", "npm:@gotgenes/pi-permission-system@40.2.2", "npm:@mzwing/pi-permission-auto-review@0.9.1", "npm:pi-scope-sandbox"]}
+        current = {"theme": "light", "packages": ["npm:pi-vim", "npm:pi-vim@0.1.0", "npm:@gotgenes/pi-permission-system", "npm:@fadouse/pi-permission@0.1.2", "npm:pi-permission-classifier@0.5.2", "npm:other", {"source": "./local", "extensions": []}]}
         merged = module.merge_settings(current, defaults)
         self.assertEqual(merged["packages"], defaults["packages"] + current["packages"][-2:])
         self.assertEqual(merged["theme"], "light")
@@ -24,13 +24,16 @@ class SettingsTests(unittest.TestCase):
 
     def test_bundle_replaces_old_npm_and_store_sources(self):
         path = "/nix/store/new/lib/pi-extensions/node_modules/"
-        defaults = {"packages": [path + "pi-vim", path + "@fadouse/pi-permission"]}
+        defaults = {"packages": [path + "pi-vim", path + "@gotgenes/pi-permission-system", path + "@mzwing/pi-permission-auto-review", path + "pi-scope-sandbox"]}
         current = {"packages": [
             "npm:pi-vim@0.14.2",
             {"source": "npm:@gotgenes/pi-permission-system", "skills": []},
             "/nix/store/old/lib/pi-extensions/node_modules/pi-vim",
             {"source": "/nix/store/old/lib/pi-extensions/node_modules/pi-permission-classifier"},
             {"source": "npm:@fadouse/pi-permission@0.1.1"},
+            "/nix/store/old/lib/pi-extensions/node_modules/@fadouse/pi-permission",
+            {"source": "npm:@mzwing/pi-permission-auto-review@0.5.0"},
+            "/nix/store/old/lib/pi-extensions/node_modules/pi-scope-sandbox",
             "npm:unrelated",
         ]}
         self.assertEqual(module.merge_settings(current, defaults)["packages"],

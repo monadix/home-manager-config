@@ -11,13 +11,6 @@
     
     initExtra = ''
       ${pkgs.feh}/bin/feh --bg-fill --no-fehbg ~/.wallpapers/nixos-nord-dark.png &
-      ${pkgs.lxqt.lxqt-policykit}/bin/lxqt-policykit-agent &
-
-      ${pkgs.xidlehook}/bin/xidlehook \
-        --not-when-audio \
-        --timer 1800 \
-        'systemctl suspend' \
-        ''' &
     '';
 
     windowManager.xmonad = {
@@ -35,6 +28,17 @@
   };
 
   services = {
+    lxqt-policykit-agent.enable = true;
+
+    xidlehook = {
+      enable = true;
+      not-when-audio = true;
+      timers = [ {
+        delay = 1800;
+        command = "${pkgs.systemd}/bin/systemctl suspend";
+      } ];
+    };
+
     xscreensaver = {
       enable = true;
     };
@@ -45,6 +49,13 @@
       xautolock.enable = true;
     };
   };
+
+  systemd.user.services.lxqt-policykit-agent.Service = {
+    Restart = "on-failure";
+    RestartSec = "5s";
+  };
+
+  systemd.user.services.xidlehook.Service.RestartSec = "5s";
 
   systemd.user.services.xscreensaver-keyboard-layout = {
     Unit = {

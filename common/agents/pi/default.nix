@@ -10,6 +10,12 @@ let
     defaultProvider = "cpa";
     defaultModel = "gpt-6.1-sol";
     defaultThinkingLevel = "medium";
+    retry = {
+      enabled = true;
+      maxRetries = 20;
+      baseDelayMs = 5000;
+      maxAgentDelayMs = 60000;
+    };
     npmCommand = [ "${pkgs.nodejs}/bin/npm" ];
     packages = map (name: "${extensions}/lib/pi-extensions/node_modules/${name}") extensionNames;
   };

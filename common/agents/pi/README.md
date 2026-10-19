@@ -29,6 +29,14 @@ account privileges; HM does not install a generic permission/reviewer stack or
 confine Bash. No `yoloMode` switch is needed with that stack removed.
 Independent extensions may still show their own dialogs or require login.
 
+## Automatic retries
+
+Transient model failures use Pi's native exponential backoff: up to 20 retries,
+waiting 5, 10, 20, 40, then 60 seconds between attempts (capped at 60 seconds).
+This allows roughly 17 minutes of backoff, plus request time, before giving up.
+Permanent errors are not made retryable; provider-level retries stay at Pi's
+native default of zero.
+
 ## Activation and ownership
 
 Build with `nix build .#homeConfigurations.MDR024.activationPackage`.

@@ -6,7 +6,7 @@ modes.add_binds("normal", {
     { ",k", "Toggle keep-loaded protection.", function (w) w:match_cmd("keep-loaded") end },
     { ",u", "Toggle explicit unload eligibility (bypasses safeguards).", function (w) w:match_cmd("allow-unload") end },
     { ",s", "Show automatic-unload protection status.", function (w) w:match_cmd("unload-status") end },
-    { ",E", "Acknowledge saved/disposable edits.", function (w) w:match_cmd("unload-reset-edited") end },
+    { ",E", "Clear edit history without exempting current state.", function (w) w:match_cmd("unload-reset-edited") end },
 })
 for _, w in pairs(window.bywidget) do
     if w.mode and w.mode.name == "normal" then w:update_binds("normal") end
@@ -183,7 +183,7 @@ probe = function (view, may_unload, reset_edited)
     local s = states[view]
     if not s or s.sleeping then return end
     if may_unload and s.override == "unload" then unload(view, s); return end
-    if s.pending then return end
+    if s.pending then s.recheck = true; return end
     local reason = native_reason(view, s)
     if reason then protect(view, s, reason) end
     -- Still install edit listeners when a tab is pinned or playing audio.
@@ -199,6 +199,12 @@ probe = function (view, may_unload, reset_edited)
         view:eval_js(script, { source = "modules/auto_unload_probe.js", callback = function (result, err)
             if states[view] ~= s or s.pending ~= request or s.generation ~= request.generation then return end
             s.pending = nil
+            if s.recheck then
+                s.recheck = nil
+                luakit.idle_add(function ()
+                    if states[view] == s then probe(view, false) end
+                end)
+            end
             if err or type(result) ~= "table" or type(result.reason) ~= "string"
                 or type(result.edited) ~= "boolean" then
                 protect(view, s, "safety check failed")
@@ -249,6 +255,13 @@ webview.add_signal("init", function (view) install(view, false) end)
 local function install_window(w, existing)
     local previous = w.tabs[w.tabs:current()]
     for _, view in ipairs(w.tabs.children) do install(view, existing) end
+    w:add_signal("mode-entered", function (_, mode)
+        if mode.name ~= "insert" and mode.name ~= "normal" then return end
+        local view = w.view
+        luakit.idle_add(function ()
+            if states[view] and owner(view) == w then probe(view, false) end
+        end)
+    end)
     w.tabs:add_signal("switch-page", function (_, view)
         local old = previous
         previous = view
@@ -351,11 +364,11 @@ modes.add_cmds({
         local s = states[w.view]
         if s then set_override(w, s.override ~= "unload" and "unload" or nil) end
     end },
-    { ":unload-reset-edited", "Acknowledge saved/disposable edits in this tab.", function (w)
+    { ":unload-reset-edited", "Clear edit history without exempting current state.", function (w)
         local s = states[w.view]
         if not s or s.pending then w:notify("Safety check pending; try again shortly") return end
         probe(w.view, false, true)
-        w:notify("Rechecking edits against current contents; other protections remain")
+        w:notify("Edit history reset; changed fields, editor contents and media remain protected")
     end },
     { ":unload-status", "Explain why this tab is kept loaded.", function (w)
         local s = states[w.view]

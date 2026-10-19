@@ -7,12 +7,15 @@
         state = window[key] = {
             document, edited: false, submitted: false, frameGap: false,
             late: document.readyState !== "loading", lateForms: false,
-            documents: new WeakSet(), roots: new WeakSet(), baseline: new WeakMap()
+            documents: new WeakSet(), roots: new WeakSet(),
+            baseline: new WeakMap(), defaults: new WeakMap()
         };
     }
     const reasons = new Set();
     const controls = [];
     const editables = [];
+    const textTypes = new Set(["text", "search", "url", "tel", "email", "password",
+        "number", "date", "datetime-local", "month", "time", "week"]);
     const editableEvent = event => event.composedPath().some(node =>
         node && node.nodeType === 1 &&
         (node.matches("input,textarea,select") || node.isContentEditable));
@@ -69,6 +72,8 @@
                 editables.push(element);
             if (element.matches("audio,video")) {
                 if (!element.paused && !element.ended) reasons.add("playing media");
+                if (element.paused && !element.ended && Number.isFinite(element.currentTime) && element.currentTime > 0)
+                    reasons.add("paused media with playback progress");
                 if (element.srcObject && typeof element.srcObject.getTracks === "function" &&
                     element.srcObject.getTracks().some(track => track.readyState === "live"))
                     reasons.add("live media stream");
@@ -98,6 +103,17 @@
         scanRoot(doc);
     }
     scanDocument(document);
+    // Inspect current state independently of events and acknowledged edits.
+    for (const element of controls) {
+        if (!state.defaults.has(element)) state.defaults.set(element, defaultValue(element));
+        if (element.matches("input[type=checkbox],input[type=radio],select")) {
+            if (value(element) !== state.defaults.get(element)) reasons.add("changed form selection");
+        } else if ((element.localName === "textarea" || textTypes.has(element.type)) &&
+            value(element) !== state.defaults.get(element)) {
+            reasons.add("changed form value");
+        }
+    }
+    if (editables.some(element => element.innerHTML !== "")) reasons.add("editable document contents");
     if (state.late && (controls.length || editables.length || document.querySelector("form")))
         state.lateForms = true;
     if (resetEdited) {
@@ -108,7 +124,7 @@
     } else {
         for (const element of controls) {
             const baseline = state.baseline.has(element)
-                ? state.baseline.get(element) : defaultValue(element);
+                ? state.baseline.get(element) : state.defaults.get(element);
             if (value(element) !== baseline) state.edited = true;
         }
         for (const element of editables) {

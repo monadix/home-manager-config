@@ -59,6 +59,7 @@ symlinking to a location outside the sandbox's allowed paths.
 
 `modules.auto_unload` unloads eligible background tabs after 30 minutes.
 Normal-mode keys: `,k` toggles keep-loaded, `,u` toggles explicit unload eligibility
-(bypassing safety checks), `,s` shows the reason, and `,E` acknowledges saved edits.
+(bypassing safety checks), `,s` shows the reason, and `,E` clears edit history—not
+protection for values changed from original defaults, editor contents or paused media.
 Overrides live in native session/undo-close metadata; private tabs stay memory-only.
 Titles: green = protected, yellow = keep, gray-purple = unload eligible, gray = unloaded.

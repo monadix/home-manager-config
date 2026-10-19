@@ -52,3 +52,5 @@ Run local checks appropriate to the change. Request independent review when the 
 For changes based on an approved visual reference, compare every affected screen in the running application against that reference before reporting completion; functional checks alone do not establish visual fidelity.
 
 Run available local diagnostics before asking the user to run them.
+
+Use `run0` rather than `sudo` for privileged commands on this system.

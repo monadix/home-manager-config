@@ -39,6 +39,10 @@ Save that rule only when the user asks you to.
 When proposing a memory rule after a correction, describe a reusable behavior
 rather than the project’s terminology, features, or implementation details.
 
+When a delegated session approaches its context limit or repeatedly uses stale
+state, checkpoint it and hand off a narrowly scoped task to a fresh session instead
+of repeatedly resuming it.
+
 Only report an independent review as passed after the reviewer checks the final implementation, including all fixes, and finds no new actionable issues. If fixes or other changes follow a review, request another review before claiming it passed.
 
 When a project has no flake.nix, use Nix commands to provide missing dependencies needed for the task.

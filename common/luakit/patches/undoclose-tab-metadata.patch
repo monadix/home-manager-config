@@ -1,0 +1,32 @@
+--- a/lib/undoclose.lua
++++ b/lib/undoclose.lua
+@@ -32,6 +32,12 @@
+ -- Map of notebook widgets to closed tab lists
+ local closed_tabs = setmetatable({}, { __mode = "k" })
+
++--- Transfer undo-close positioning identity when replacing an open webview.
++-- The caller retains responsibility for attaching and destroying the widgets.
++function _M.replace_view(old_view, new_view)
++    view_uids[new_view], view_uids[old_view] = view_uids[old_view], nil
++end
++
+ --- Returns a webview widget's UID, creating one if necessary.
+ -- @tparam widget view The webview.
+ -- @treturn number The UID for the webview.
+@@ -91,6 +97,8 @@
+         view_uids[view] = nil
+         if view.uri ~= hist_item.uri then tab.next_uri = view.uri end
+     end
++    -- Modules can extend the record serialized by the session module.
++    _M.emit_signal("save-item", view, tab)
+     closed_tabs[w.tabs] = closed_tabs[w.tabs] or {}
+     table.insert(closed_tabs[w.tabs], tab)
+     local max_saved_tabs = settings.get_setting("undoclose.max_saved_tabs")
+@@ -121,6 +129,7 @@
+     reopening[view] = tab
+     -- Restore saved view uid
+     view_uids[view] = tab.self_uid
++    _M.emit_signal("restore-item", view, tab)
+     -- Attempt to open in last position
+     local after = view_from_uid(tab.after_uid)
+     if after then

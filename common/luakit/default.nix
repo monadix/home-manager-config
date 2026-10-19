@@ -10,6 +10,10 @@ let
       rev = "39232d48c4e167d1c9612def71a983e2e2bbe3db";
       hash = "sha256-wI+DxNyoJXfnQZIAF7rCbWrSsvc2Y6zkj6glCqjcSUY=";
     };
+    patches = (oldAttrs.patches or [ ]) ++ [
+      ./patches/undoclose-tab-metadata.patch
+      ./patches/session-save-errors.patch
+    ];
     preFixup = (oldAttrs.preFixup or "") + ''
       gappsWrapperArgs+=(
         --prefix GST_PLUGIN_SYSTEM_PATH_1_0 : "${pkgs.pipewire}/lib/gstreamer-1.0"
@@ -27,10 +31,13 @@ in
     require("settings").webview.enable_media_stream = true
     require("modules.session_autosave")
     require("modules.media_permissions")
+    require("modules.auto_unload")
   '';
 
   xdg.configFile."luakit/modules/session_autosave.lua".source = ./modules/session_autosave.lua;
   xdg.configFile."luakit/modules/media_permissions.lua".source = ./modules/media_permissions.lua;
+  xdg.configFile."luakit/modules/auto_unload.lua".source = ./modules/auto_unload.lua;
+  xdg.configFile."luakit/modules/auto_unload_probe.js".source = ./modules/auto_unload_probe.js;
 
   xdg.configFile."luakit/theme.lua".text = ''
     local theme = dofile("${luakit}/etc/xdg/luakit/theme.lua")

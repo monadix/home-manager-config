@@ -54,3 +54,11 @@ Restart to reload an edited WebProcess module. For tracing that attaches through
 Keep WebProcess module files inside Luakit's configuration directory so the
 patched sandbox can read them. Copy experiments from elsewhere rather than
 symlinking to a location outside the sandbox's allowed paths.
+
+## Automatic tab unloading
+
+`modules.auto_unload` unloads eligible background tabs after 30 minutes.
+Normal-mode keys: `,k` toggles keep-loaded, `,u` toggles explicit unload eligibility
+(bypassing safety checks), `,s` shows the reason, and `,E` acknowledges saved edits.
+Overrides live in native session/undo-close metadata; private tabs stay memory-only.
+Titles: green = protected, yellow = keep, gray-purple = unload eligible, gray = unloaded.

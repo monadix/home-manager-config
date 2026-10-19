@@ -1,0 +1,25 @@
+--- a/lib/session.lua
++++ b/lib/session.lua
+@@ -73,10 +73,18 @@
+
+     if #state > 0 then
+         local tempfile = file .. ".new"
+-        local fh = io.open(tempfile, "wb")
+-        fh:write(pickle.pickle(state))
+-        io.close(fh)
+-        os.rename(tempfile, file)
++        local fh = assert(io.open(tempfile, "wb"))
++        local ok, err = fh:write(pickle.pickle(state))
++        local closed, close_err = fh:close()
++        if not ok or not closed then
++            os.remove(tempfile)
++            error(err or close_err)
++        end
++        local renamed, rename_err = os.rename(tempfile, file)
++        if not renamed then
++            os.remove(tempfile)
++            error(rename_err)
++        end
+     else
+         os.remove(file)
+     end

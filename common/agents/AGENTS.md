@@ -17,9 +17,9 @@ Before committing, check repository guidance and recent commit messages, and
 follow their convention.
 
 Prefer the smallest change that fully satisfies the request. Add documentation,
-rules, or abstractions only when they meet a concrete need; keep their length
-proportional to the task and avoid repeating existing guidance. Before finishing,
-review the diff for unnecessary additions.
+rules, or abstractions only when they meet a concrete need; avoid repeating
+existing guidance. Keep feature documentation proportional to the feature's
+scope. Before finishing, review the diff for unnecessary additions.
 
 Prefer existing tools and declarative configuration over custom scripts. Add
 scripting only where those cannot express the required behavior, and keep it

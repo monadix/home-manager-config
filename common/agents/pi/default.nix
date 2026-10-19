@@ -41,6 +41,7 @@ in
   config = {
     programs.pi-coding-agent = {
       enable = true;
+      cpaApiKeySecret = "pi-cpa-api-key";
       inherit package;
       extraPackages = [ pkgs.nodejs ];
       context = ../AGENTS.md;

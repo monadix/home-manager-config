@@ -58,21 +58,16 @@ uses Node from the pinned nixpkgs development shell and refreshes the npm lockfi
 without installing packages into the checkout. Select an available CPA model
 with `/model` if needed.
 
-## Optional SOPS CPA key
+## SOPS CPA key
 
-Add an encrypted `pi-cpa-api-key` entry using `sops secrets/secrets.yaml`, then
-set this in the relevant host module (or common configuration):
-
-```nix
-programs.pi-coding-agent.cpaApiKeySecret = "pi-cpa-api-key";
-```
-
+All hosts use the encrypted `pi-cpa-api-key` entry in `secrets/secrets.yaml`,
+selected by `programs.pi-coding-agent.cpaApiKeySecret` in the common configuration.
 The wrapper reads the decrypted secret at launch into `CLIPROXYAPI_API_KEY`;
 only its path enters the Nix store. Missing/empty secrets prevent startup.
-The option defaults to null: existing `/login cpa` authentication or an externally
-provided `CLIPROXYAPI_API_KEY` remains usable without adding a secret. Do not
-put plaintext keys in Nix configuration. The CPA endpoint is a private LAN URL
-shared by all hosts; change it here if their network topology differs.
+A saved `/login cpa` key takes precedence during model discovery; clear stale
+saved credentials if refresh still returns 401 after activation and restarting Pi.
+Do not put plaintext keys in Nix configuration. The CPA endpoint is a private LAN
+URL shared by all hosts; change it here if their network topology differs.
 
 ## Context7 and search credentials
 

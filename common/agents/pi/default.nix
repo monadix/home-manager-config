@@ -4,7 +4,7 @@ let
   json = pkgs.formats.json { };
   agentDir = "${config.home.homeDirectory}/.pi/agent";
   extensions = import ./extensions/_bundle.nix { inherit pkgs; };
-  extensionNames = (builtins.attrNames (builtins.fromJSON (builtins.readFile ./extensions/package.json)).dependencies) ++ [ "pi-scope-sandbox" ];
+  extensionNames = builtins.attrNames (builtins.fromJSON (builtins.readFile ./extensions/package.json)).dependencies;
   settings = json.generate "pi-settings-defaults.json" {
     theme = "dark";
     defaultProvider = "cpa";
@@ -42,7 +42,7 @@ in
     programs.pi-coding-agent = {
       enable = true;
       inherit package;
-      extraPackages = [ pkgs.nodejs pkgs.bubblewrap ];
+      extraPackages = [ pkgs.nodejs ];
       context = ../AGENTS.md;
       # settings.json stays writable for /settings, /model and pi install.
     };
@@ -70,46 +70,10 @@ in
         authRequired = true;
         authHeader = true;
       };
-      ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
-        authorizerChain = [ "pi-auto-review" ];
-        permission = {
-          "*" = "ask";
-          read = "allow";
-          write = "allow";
-          edit = "allow";
-          grep = "allow";
-          find = "allow";
-          ls = "allow";
-          path = "allow";
-          external_directory = "ask";
-          bash = "ask";
-          scope_sandbox_authorize = "ask";
-          scope_host_authorize = "ask";
-        };
-      };
-      ".pi/agent/extensions/pi-auto-review/config.json".text = builtins.toJSON {
-        model = "cpa/codex-auto-review";
-        reasoning = "low";
-        timeoutMs = 45000;
-        failureMode = "defer";
-        autoConfirmBoundedAllows = [ "external_directory" "path" ];
-      };
-      ".pi/agent/extensions/pi-scope-sandbox/config.json".text = builtins.toJSON {
-        mode = "workspace-write";
-        writeRoots = [ ];
-        denyRead = [ ];
-        envAllow = [ ];
-        network = false;
-        allowHost = true;
-        bwrap = "${pkgs.bubblewrap}/bin/bwrap";
-        shell = "${pkgs.bash}/bin/bash";
-        # Workflow children may omit ambient extensions; keep their reviewer.
-        childExtensions = [ "${extensions}/lib/pi-extensions/node_modules/@erichll/pi-auto-review/src/index.ts" ];
-      };
     };
 
     # Reapply declared defaults, preserving other runtime settings and packages.
-    # Remove retired permission packages and merge CPA context overrides without replacing local providers.
+    # Remove retired permission/reviewer packages and merge CPA context overrides.
     home.activation.piSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${pkgs.python3}/bin/python3 ${./merge-settings.py} \
         ${lib.escapeShellArg agentDir} ${settings}

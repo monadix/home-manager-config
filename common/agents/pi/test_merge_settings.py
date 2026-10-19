@@ -15,19 +15,27 @@ spec.loader.exec_module(module)
 
 class SettingsTests(unittest.TestCase):
     def test_package_pins_preserve_unrelated_entries(self):
-        defaults = {"defaultProvider": "cpa", "packages": ["npm:pi-vim@0.14.2", "npm:@gotgenes/pi-permission-system@40.2.2", "npm:@erichll/pi-auto-review@0.26.0", "npm:pi-scope-sandbox"]}
-        current = {"theme": "light", "packages": ["npm:pi-vim", "npm:pi-vim@0.1.0", "npm:@gotgenes/pi-permission-system", "npm:@mzwing/pi-permission-auto-review@0.9.1", {"source": "npm:@erichll/pi-auto-review@0.25.0", "extensions": []}, "npm:@fadouse/pi-permission@0.1.2", "npm:pi-permission-classifier@0.5.2", "npm:other", {"source": "./local", "extensions": []}]}
+        defaults = {"defaultProvider": "cpa", "packages": ["npm:pi-vim@0.14.2"]}
+        current = {"theme": "light", "packages": [
+            "npm:pi-vim", "npm:pi-vim@0.1.0",
+            "npm:@gotgenes/pi-permission-system@40.2.2",
+            "npm:@erichll/pi-auto-review@0.26.0",
+            "npm:@mzwing/pi-permission-auto-review@0.9.1",
+            {"source": "npm:@fadouse/pi-permission@0.1.2", "extensions": []},
+            "npm:pi-permission-classifier@0.5.2", "npm:pi-scope-sandbox",
+            "npm:other", {"source": "./local", "extensions": []},
+        ]}
         merged = module.merge_settings(current, defaults)
         self.assertEqual(merged["packages"], defaults["packages"] + current["packages"][-2:])
         self.assertEqual(merged["theme"], "light")
         self.assertEqual(module.merge_settings(merged, defaults), merged)
 
-    def test_bundle_replaces_old_npm_and_store_sources(self):
+    def test_retired_permission_packages_are_removed_from_npm_store_and_objects(self):
         path = "/nix/store/new/lib/pi-extensions/node_modules/"
-        defaults = {"packages": [path + "pi-vim", path + "@gotgenes/pi-permission-system", path + "@erichll/pi-auto-review", path + "pi-scope-sandbox"]}
+        defaults = {"packages": [path + "pi-vim"]}
         current = {"packages": [
             "npm:pi-vim@0.14.2",
-            {"source": "npm:@gotgenes/pi-permission-system", "skills": []},
+            {"source": "npm:@gotgenes/pi-permission-system@40.2.2", "skills": []},
             "/nix/store/old/lib/pi-extensions/node_modules/pi-vim",
             {"source": "/nix/store/old/lib/pi-extensions/node_modules/pi-permission-classifier"},
             {"source": "npm:@fadouse/pi-permission@0.1.1"},
@@ -36,14 +44,12 @@ class SettingsTests(unittest.TestCase):
             "/nix/store/old/lib/pi-extensions/node_modules/@mzwing/pi-permission-auto-review",
             {"source": "npm:@erichll/pi-auto-review@0.25.0", "extensions": []},
             "/nix/store/old/lib/pi-extensions/node_modules/@erichll/pi-auto-review",
+            "/nix/store/old/lib/pi-extensions/node_modules/@gotgenes/pi-permission-system",
             "/nix/store/old/lib/pi-extensions/node_modules/pi-scope-sandbox",
-            "npm:unrelated",
+            "npm:unrelated", {"source": "./local", "extensions": []},
         ]}
         merged = module.merge_settings(current, defaults)
-        self.assertEqual(merged["packages"], defaults["packages"] + ["npm:unrelated"])
-        active_reviewers = [source for source in merged["packages"]
-                            if "pi-auto-review" in str(source) or "permission-auto-review" in str(source)]
-        self.assertEqual(active_reviewers, [path + "@erichll/pi-auto-review"])
+        self.assertEqual(merged["packages"], defaults["packages"] + ["npm:unrelated", {"source": "./local", "extensions": []}])
         self.assertEqual(module.merge_settings(merged, defaults), merged)
 
     def test_model_override_preserves_local_configuration(self):

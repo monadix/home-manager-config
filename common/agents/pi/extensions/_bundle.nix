@@ -1,12 +1,6 @@
 { pkgs }:
 let
   piRoot = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo";
-  scopeSandbox = pkgs.fetchFromGitHub {
-    owner = "monadix";
-    repo = "pi-scope-sandbox";
-    rev = "7935cdf44a1ad40ee6873e85b016f62067b3ec9a";
-    hash = "sha256-lFkmuAyUTZBUxe951JwTJFrHo0wmux9AYId8Vng0i0w=";
-  };
 in
 pkgs.buildNpmPackage {
   pname = "pi-extensions";
@@ -21,7 +15,6 @@ pkgs.buildNpmPackage {
     runHook preInstall
     mkdir -p $out/lib/pi-extensions
     cp -r node_modules $out/lib/pi-extensions/
-    cp -r ${scopeSandbox} $out/lib/pi-extensions/node_modules/pi-scope-sandbox
     # Native ESM imports need the same host peers that Pi supplies to extensions.
     mkdir -p $out/lib/pi-extensions/node_modules/@earendil-works
     for peer in pi-ai pi-agent-core pi-tui; do
@@ -39,14 +32,11 @@ pkgs.buildNpmPackage {
     runHook preInstallCheck
     PI_OFFLINE=1 PI_TELEMETRY=0 node --experimental-import-meta-resolve --input-type=module <<'JS'
     import assert from 'node:assert/strict';
-    import { existsSync, realpathSync } from 'node:fs';
+    import { realpathSync } from 'node:fs';
     import { pathToFileURL } from 'node:url';
 
     const modules = process.env.out + '/lib/pi-extensions/node_modules/';
-    const parent = pathToFileURL(modules + 'pi-scope-sandbox/index.ts').href;
-    assert.ok(!existsSync(modules + '@fadouse/pi-permission'), 'old permission stack must not be bundled');
-    assert.ok(!existsSync(modules + '@mzwing/pi-permission-auto-review'), 'retired reviewer must not be bundled');
-    assert.ok(existsSync(modules + '@erichll/pi-auto-review/src/index.ts'), 'pinned reviewer entry point must exist');
+    const parent = pathToFileURL(modules + 'pi-subagents/package.json').href;
     const host = '${piRoot}';
     const peers = [
       ['@earendil-works/pi-ai', host + '/node_modules/@earendil-works/pi-ai', 'Type', 'object'],
@@ -63,60 +53,6 @@ pkgs.buildNpmPackage {
       assert.ok(resolved.startsWith(pathToFileURL(realpathSync(target) + '/').href), name);
       assert.equal(typeof (await import(resolved))[symbol], type, name + '.' + symbol);
       console.log('Host peer import OK:', name);
-    }
-    JS
-    # Loading the real stack also checks TypeScript peers and required-child APIs.
-    # No commands, model requests, production configuration or credentials are used.
-    PI_OFFLINE=1 PI_TELEMETRY=0 node --input-type=module <<'JS'
-    import assert from 'node:assert/strict';
-    import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-    import { tmpdir } from 'node:os';
-    import { join } from 'node:path';
-    import { createRequire } from 'node:module';
-    import { pathToFileURL } from 'node:url';
-    const modules = process.env.out + '/lib/pi-extensions/node_modules/';
-    const require = createRequire(modules + 'pi-subagents/package.json');
-    const { createJiti } = require('jiti');
-    const jiti = createJiti(modules + 'pi-scope-sandbox/index.ts');
-    const sdk = await import(pathToFileURL('${piRoot}/dist/index.js'));
-    const root = mkdtempSync(join(tmpdir(), 'pi-hm-stack-'));
-    const agentDir = join(root, 'agent');
-    const cwd = join(root, 'workspace');
-    process.env.PI_CODING_AGENT_DIR = agentDir;
-    process.env.PI_PERMISSION_SYSTEM_POLICY_AGENT_DIR = agentDir;
-    for (const path of [cwd, join(agentDir, 'extensions/pi-permission-system'), join(agentDir, 'extensions/pi-auto-review'), join(agentDir, 'extensions/pi-scope-sandbox')]) mkdirSync(path, { recursive: true });
-    const reviewer = modules + '@erichll/pi-auto-review/src/index.ts';
-    writeFileSync(join(agentDir, 'extensions/pi-permission-system/config.json'), JSON.stringify({ authorizerChain: ['pi-auto-review'], permission: { '*': 'ask', read: 'allow', write: 'allow', edit: 'allow', grep: 'allow', find: 'allow', ls: 'allow', path: 'allow', external_directory: 'ask', bash: 'ask', scope_sandbox_authorize: 'ask', scope_host_authorize: 'ask' } }));
-    writeFileSync(join(agentDir, 'extensions/pi-auto-review/config.json'), JSON.stringify({ model: 'cpa/codex-auto-review', reasoning: 'low', timeoutMs: 45000, failureMode: 'defer', autoConfirmBoundedAllows: ['external_directory', 'path'] }));
-    writeFileSync(join(agentDir, 'extensions/pi-scope-sandbox/config.json'), JSON.stringify({ mode: 'workspace-write', writeRoots: [], denyRead: [], envAllow: [], network: false, allowHost: true, bwrap: '${pkgs.bubblewrap}/bin/bwrap', shell: '${pkgs.bash}/bin/bash', childExtensions: [reviewer] }));
-    let session;
-    try {
-      const settingsManager = sdk.SettingsManager.inMemory({ packages: [], compaction: { enabled: false }, retry: { enabled: false } });
-      const loader = new sdk.DefaultResourceLoader({ cwd, agentDir, settingsManager, noExtensions: true, noSkills: true, noPromptTemplates: true, noThemes: true, noContextFiles: true, additionalExtensionPaths: [modules + '@gotgenes/pi-permission-system/src/index.ts', reviewer, modules + 'pi-scope-sandbox/index.ts'] });
-      await loader.reload();
-      assert.deepEqual(loader.getExtensions().errors, []);
-      const modelRuntime = await sdk.ModelRuntime.create({ authPath: join(agentDir, 'auth.json'), modelsPath: null, modelsStorePath: join(agentDir, 'models-cache.json'), refreshOnCreate: false, allowModelNetwork: false });
-      ({ session } = await sdk.createAgentSession({ cwd, agentDir, modelRuntime, settingsManager, resourceLoader: loader, sessionManager: sdk.SessionManager.inMemory(cwd) }));
-      const errors = [];
-      await session.bindExtensions({ mode: 'json', onError: error => errors.push(error) });
-      assert.deepEqual(errors, []);
-      const { getPermissionsService } = await jiti.import(modules + '@gotgenes/pi-permission-system/src/service.ts');
-      const sessionId = session.sessionManager.getSessionId();
-      assert.ok(getPermissionsService(sessionId));
-      assert.ok(session.getCallableToolNames().includes('scope_sandbox_authorize'));
-      assert.ok(session.getCallableToolNames().includes('scope_host_authorize'));
-      const sandboxConfig = JSON.parse(await (await import('node:fs/promises')).readFile(join(agentDir, 'extensions/pi-scope-sandbox/config.json'), 'utf8'));
-      assert.equal(sandboxConfig.allowHost, true);
-      assert.equal(sandboxConfig.mode, 'workspace-write');
-      assert.equal(sandboxConfig.network, false);
-      const { registerRequiredChildExtensions } = await jiti.import('pi-subagents/required-child-extensions');
-      let probe;
-      try { assert.throws(() => { probe = registerRequiredChildExtensions({ sessionId, extensions: [] }); }, /already registered/); }
-      finally { probe?.dispose(); }
-      console.log('Pi permission/reviewer/sandbox stack loads offline with required child registration');
-    } finally {
-      if (session) { await session.extensionRunner.emit({ type: 'session_shutdown' }); session.dispose(); }
-      rmSync(root, { recursive: true, force: true });
     }
     JS
     runHook postInstallCheck

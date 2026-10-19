@@ -4,8 +4,8 @@ let
   scopeSandbox = pkgs.fetchFromGitHub {
     owner = "monadix";
     repo = "pi-scope-sandbox";
-    rev = "60d50c7ddf2cc6e8bd2816fa0fd78f3680b3df70";
-    hash = "sha256-8eTSBARc8L22Iw68zjiJWDCOCrixJEBegEo5OK61XVo=";
+    rev = "7935cdf44a1ad40ee6873e85b016f62067b3ec9a";
+    hash = "sha256-lFkmuAyUTZBUxe951JwTJFrHo0wmux9AYId8Vng0i0w=";
   };
 in
 pkgs.buildNpmPackage {
@@ -86,9 +86,9 @@ pkgs.buildNpmPackage {
     process.env.PI_PERMISSION_SYSTEM_POLICY_AGENT_DIR = agentDir;
     for (const path of [cwd, join(agentDir, 'extensions/pi-permission-system'), join(agentDir, 'extensions/pi-auto-review'), join(agentDir, 'extensions/pi-scope-sandbox')]) mkdirSync(path, { recursive: true });
     const reviewer = modules + '@erichll/pi-auto-review/src/index.ts';
-    writeFileSync(join(agentDir, 'extensions/pi-permission-system/config.json'), JSON.stringify({ authorizerChain: ['pi-auto-review'] }));
+    writeFileSync(join(agentDir, 'extensions/pi-permission-system/config.json'), JSON.stringify({ authorizerChain: ['pi-auto-review'], permission: { '*': 'ask', read: 'allow', write: 'allow', edit: 'allow', grep: 'allow', find: 'allow', ls: 'allow', path: 'allow', external_directory: 'ask', bash: 'ask', scope_sandbox_authorize: 'ask', scope_host_authorize: 'ask' } }));
     writeFileSync(join(agentDir, 'extensions/pi-auto-review/config.json'), JSON.stringify({ model: 'cpa/codex-auto-review', reasoning: 'low', timeoutMs: 45000, failureMode: 'defer', autoConfirmBoundedAllows: ['external_directory', 'path'] }));
-    writeFileSync(join(agentDir, 'extensions/pi-scope-sandbox/config.json'), JSON.stringify({ bwrap: '${pkgs.bubblewrap}/bin/bwrap', shell: '${pkgs.bash}/bin/bash', childExtensions: [reviewer] }));
+    writeFileSync(join(agentDir, 'extensions/pi-scope-sandbox/config.json'), JSON.stringify({ mode: 'workspace-write', writeRoots: [], denyRead: [], envAllow: [], network: false, allowHost: true, bwrap: '${pkgs.bubblewrap}/bin/bwrap', shell: '${pkgs.bash}/bin/bash', childExtensions: [reviewer] }));
     let session;
     try {
       const settingsManager = sdk.SettingsManager.inMemory({ packages: [], compaction: { enabled: false }, retry: { enabled: false } });
@@ -104,6 +104,11 @@ pkgs.buildNpmPackage {
       const sessionId = session.sessionManager.getSessionId();
       assert.ok(getPermissionsService(sessionId));
       assert.ok(session.getCallableToolNames().includes('scope_sandbox_authorize'));
+      assert.ok(session.getCallableToolNames().includes('scope_host_authorize'));
+      const sandboxConfig = JSON.parse(await (await import('node:fs/promises')).readFile(join(agentDir, 'extensions/pi-scope-sandbox/config.json'), 'utf8'));
+      assert.equal(sandboxConfig.allowHost, true);
+      assert.equal(sandboxConfig.mode, 'workspace-write');
+      assert.equal(sandboxConfig.network, false);
       const { registerRequiredChildExtensions } = await jiti.import('pi-subagents/required-child-extensions');
       let probe;
       try { assert.throws(() => { probe = registerRequiredChildExtensions({ sessionId, extensions: [] }); }, /already registered/); }

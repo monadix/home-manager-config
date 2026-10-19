@@ -27,7 +27,7 @@ overrides to presets that exclude 500,000.
 `pi-vim` provides Vim editing. The permission stack is
 `@gotgenes/pi-permission-system` 40.2.2, `@erichll/pi-auto-review` 0.26.0, and
 [pi-scope-sandbox](https://github.com/monadix/pi-scope-sandbox) pinned to commit
-`60d50c7`. The permission system owns policy and prompts; its sole authorizer is
+`7935cdf`. The permission system owns policy and prompts; its sole authorizer is
 `pi-auto-review`. The reviewer uses session context, and the sandbox confines
 Bash. The retired fadouse wrapper and classifier are not loaded alongside them.
 Version 0.26.0 is selected for compatibility with Pi 1.2.0 and permission-system
@@ -55,9 +55,9 @@ extension state. Malformed runtime settings JSON and symlinks are rejected rathe
 than overwritten. Do not activate while Pi is saving its settings.
 
 Registry extensions are built into the Nix store from `extensions/package-lock.json`
-using `importNpmLock`. The unpublished sandbox is fetched from GitHub with a fixed
-revision and content hash in `extensions/_bundle.nix`, then included in the same
-bundle. Pi loads local package directories without runtime npm downloads.
+using `importNpmLock`. The sandbox is fetched from GitHub with a fixed
+revision and verified content hash in `extensions/_bundle.nix`, then included
+in the same bundle. Pi loads local package directories without runtime npm downloads.
 Lifecycle scripts are disabled. Host-provided Pi peers are linked from the same
 runtime rather than installed as separate copies. Offline build checks exercise
 native peer imports, load the real permission/reviewer/sandbox stack in an isolated
@@ -127,13 +127,27 @@ an otherwise-unapproved request fails closed or reaches the configured human
 deferral path. Unlike the old setup, ordinary Bash calls also enter the configured
 permission policy, potentially incurring review.
 
-The sandbox uses absolute Nix Bubblewrap/Bash paths. Bash has a read-only root,
-writable workspace, private scratch/HOME, filtered environment and no network by
-default. `writeRoot` or `network: true` requests pass through a separate nested
-permission gate for that exact call. Network grants enable all host networking,
-not just one domain. There is no unsandboxed fallback. `/nix/store` remains readable,
-but the host Nix daemon socket is deliberately hidden: daemon-mediated Nix builds
-must run from your terminal, not through a blanket exemption.
+The sandbox uses absolute Nix Bubblewrap/Bash paths and starts each session in
+`workspace-write` mode with networking disabled. Bash has a read-only root,
+writable workspace, private scratch/HOME and filtered environment. Optional
+per-call `writeRoot`, `network`, `readPaths`, `writePaths`, `unixSockets`, and
+`env` arguments are independently scoped and pass through nested permission
+gates for that exact call; network grants enable all host networking, not just
+one domain. Fine-grained resource arrays are call arguments, not global config.
+The global `allowHost: true` setting only enables explicit host escalation: a
+per-call `{ host: true }` request uses a separate `scope_host_authorize` gate.
+`/scope-sandbox off` asks for confirmation and makes subsequent calls use host
+mode for this session, but every call still requires host authorization;
+`/scope-sandbox on` restores the configured sandbox baseline. Both are TUI-only,
+per-session, and do not persist or propagate to child sessions. Full host access
+remains reviewed even after `off`; permission-system YOLO is an independent
+setting and is not enabled here. A failed sandboxed command never retries on
+host. The `/scope-sandbox` status reports the configured baseline, effective
+mode, session override, networking and `allowHost` capability. The Nix daemon
+socket remains hidden in sandbox mode; after the new source is activated, it can
+be scoped for one call using its Unix socket and required environment variables,
+or accessed through explicitly approved host mode. Live daemon access is not
+tested.
 
 Sandbox settings are global-only; project files cannot loosen the sandbox. The
 permission system still accepts trusted project policy, so inspect that policy
@@ -159,7 +173,7 @@ nix build .#homeConfigurations.MDR024.activationPackage
 
 After activation, start a **new** Pi session and confirm:
 
-- `/scope-sandbox` reports workspace-write mode, networking disabled, and the pinned binaries load.
+- `/scope-sandbox` reports the workspace-write baseline, sandboxed effective mode, networking disabled, `allowHost`, and the pinned binaries load.
 - `cat ~/.pi/agent/extensions/pi-auto-review/config.json` shows the pinned model,
   timeout, failure mode, and bounded TUI bridge scopes; the permission-system
   configuration names only `pi-auto-review` in its authorizer chain.
@@ -174,8 +188,8 @@ After activation, start a **new** Pi session and confirm:
 - Nix daemon access from sandboxed Bash fails rather than retrying outside isolation.
 
 The lockfile pins reviewer 0.26.0; it advertises Pi `^1.1` and permission-system
-`>=40.0.2` peers. The offline bundle check can prove SDK loading and required-child
-registration, but not invoke inference or exercise a live TUI dialog. This repo's
-pinned scope-sandbox source remains unchanged at `60d50c7`; its unpublished follow-up
-integration is not included. Local checks do not establish live reviewer, TUI
-bridge, or child-agent sandbox behavior.
+`>=40.0.2` peers. The offline bundle install check verifies SDK startup, both
+authorization gates, `allowHost` configuration capability, and required-child
+registration, but does not invoke inference or exercise a live TUI dialog. Local
+checks do not establish live reviewer inference, interactive TUI behavior,
+full child workflows, or Nix daemon access.

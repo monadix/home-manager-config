@@ -84,6 +84,7 @@ in
           external_directory = "ask";
           bash = "ask";
           scope_sandbox_authorize = "ask";
+          scope_host_authorize = "ask";
         };
       };
       ".pi/agent/extensions/pi-auto-review/config.json".text = builtins.toJSON {
@@ -99,6 +100,7 @@ in
         denyRead = [ ];
         envAllow = [ ];
         network = false;
+        allowHost = true;
         bwrap = "${pkgs.bubblewrap}/bin/bwrap";
         shell = "${pkgs.bash}/bin/bash";
         # Workflow children may omit ambient extensions; keep their reviewer.

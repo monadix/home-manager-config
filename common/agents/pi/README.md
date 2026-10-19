@@ -66,8 +66,11 @@ The wrapper reads the decrypted secret at launch into `CLIPROXYAPI_API_KEY`;
 only its path enters the Nix store. Missing/empty secrets prevent startup.
 A saved `/login cpa` key takes precedence during model discovery; clear stale
 saved credentials if refresh still returns 401 after activation and restarting Pi.
-Do not put plaintext keys in Nix configuration. The CPA endpoint is a private LAN
-URL shared by all hosts; change it here if their network topology differs.
+The CPA endpoint is stored as `internal-cpa-url` in the same SOPS file and shared
+by all hosts. SOPS renders the provider config at runtime; Home Manager links to
+that file so the endpoint does not enter the Nix store. Update the endpoint with
+`sops secrets/secrets.yaml`. Do not put plaintext keys or internal URLs in Nix
+configuration.
 
 ## Context7 and search credentials
 

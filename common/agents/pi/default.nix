@@ -51,6 +51,7 @@ in
     sops.secrets = {
       context7-api-key = { };
       exa-api-key = { };
+      internal-cpa-url = { };
     } // lib.optionalAttrs (cfg.cpaApiKeySecret != null) {
       ${cfg.cpaApiKeySecret} = { };
     };
@@ -65,12 +66,15 @@ in
             "!${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.context7-api-key.path}";
         };
       };
-      ".pi/agent/pi-cliproxyapi-provider/config.json".text = builtins.toJSON {
-        providerName = "cpa";
-        baseUrl = "http://172.16.20.91:8317/v1";
-        authRequired = true;
-        authHeader = true;
-      };
+      ".pi/agent/pi-cliproxyapi-provider/config.json".source =
+        config.lib.file.mkOutOfStoreSymlink config.sops.templates."pi-cliproxyapi-provider.json".path;
+    };
+
+    sops.templates."pi-cliproxyapi-provider.json".content = builtins.toJSON {
+      providerName = "cpa";
+      baseUrl = config.sops.placeholder.internal-cpa-url;
+      authRequired = true;
+      authHeader = true;
     };
 
     # Reapply declared defaults, preserving other runtime settings and packages.

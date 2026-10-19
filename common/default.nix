@@ -52,6 +52,7 @@
     winetricks
     libxcomposite
     xautolock
+    xclip
     zoom-us
 
     # fonts

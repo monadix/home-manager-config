@@ -25,11 +25,13 @@ Pi's native metadata layer because the pinned CPA extension restricts its own
 overrides to presets that exclude 500,000.
 
 `pi-vim` provides Vim editing. The permission stack is
-`@gotgenes/pi-permission-system` 40.2.2, `@mzwing/pi-permission-auto-review`
-0.9.1, and [pi-scope-sandbox](https://github.com/monadix/pi-scope-sandbox) pinned
-to commit `60d50c7`. The permission system owns policy and prompts, the reviewer
-uses session context, and the sandbox confines Bash. The retired fadouse wrapper
-and classifier are not loaded alongside them.
+`@gotgenes/pi-permission-system` 40.2.2, `@erichll/pi-auto-review` 0.26.0, and
+[pi-scope-sandbox](https://github.com/monadix/pi-scope-sandbox) pinned to commit
+`60d50c7`. The permission system owns policy and prompts; its sole authorizer is
+`pi-auto-review`. The reviewer uses session context, and the sandbox confines
+Bash. The retired fadouse wrapper and classifier are not loaded alongside them.
+Version 0.26.0 is selected for compatibility with Pi 1.2.0 and permission-system
+40.2.2; 0.27 requires newer peers and is not part of this migration.
 
 ## Activation and ownership
 
@@ -45,7 +47,7 @@ unrelated settings and packages and saving the original as `settings.json.pre-hm
 Activation removes retired `@fadouse/pi-permission` and
 `pi-permission-classifier` declarations, including old Nix bundle paths, without
 deleting their local state. HM manages the three global files under
-`~/.pi/agent/extensions/{pi-permission-system,pi-permission-auto-review,pi-scope-sandbox}/config.json`.
+`~/.pi/agent/extensions/{pi-permission-system,pi-auto-review,pi-scope-sandbox}/config.json`.
 The old HM-owned `permissions.json` link is no longer declared; old project
 `.pi/permissions.json` files are not used by this stack. Back up existing files
 privately if HM reports ownership collisions; do not delete authentication or
@@ -111,12 +113,19 @@ key can be removed after validating the SOPS-backed setup.
 
 Workspace file tools are allowed, with external-directory access requiring
 approval. Bash, scope exceptions, and otherwise-unconfigured tools use `ask`.
-The `auto-review` authorizer uses `cpa/codex-auto-review` (low reasoning), independent
-of the coding model, with bounded active-branch session context. An authorizer may
-allow, deny, or defer; review failures defer to the human prompt. A headless request
-without an applicable approval fails closed. Path/external-directory boundaries
-can still require a human after model review. Unlike the old setup, ordinary Bash
-calls also enter the configured permission policy, potentially incurring review.
+The sole authorizer is `pi-auto-review`, configured in
+`~/.pi/agent/extensions/pi-auto-review/config.json` with model
+`cpa/codex-auto-review`, low reasoning, a 45-second timeout, and `failureMode: defer`.
+The permission-system policy remains in
+`~/.pi/agent/extensions/pi-permission-system/config.json`; the `authorizerChain`
+is exactly `["pi-auto-review"]`. The reviewer uses bounded active-branch session
+context. Review results may allow, deny, or defer; failures defer to the human
+prompt. Its bounded-allow bridge only auto-confirms matching `path` and
+`external_directory` requests through Pi's TUI, with request-bound approvals;
+it is not a general policy bypass. In headless/non-TUI use there is no bridge, so
+an otherwise-unapproved request fails closed or reaches the configured human
+deferral path. Unlike the old setup, ordinary Bash calls also enter the configured
+permission policy, potentially incurring review.
 
 The sandbox uses absolute Nix Bubblewrap/Bash paths. Bash has a read-only root,
 writable workspace, private scratch/HOME, filtered environment and no network by
@@ -151,13 +160,22 @@ nix build .#homeConfigurations.MDR024.activationPackage
 After activation, start a **new** Pi session and confirm:
 
 - `/scope-sandbox` reports workspace-write mode, networking disabled, and the pinned binaries load.
-- `/permission-auto-review show` reports `cpa/codex-auto-review`.
+- `cat ~/.pi/agent/extensions/pi-auto-review/config.json` shows the pinned model,
+  timeout, failure mode, and bounded TUI bridge scopes; the permission-system
+  configuration names only `pi-auto-review` in its authorizer chain.
 - No extension load errors; CPA inference, Vim editing and web tools still work.
-- Workspace writes succeed; external writes and network scopes follow the expected
-  contextual review/human approval path. A later call does not inherit a scope grant.
+- In an interactive TUI, path and external-directory checks only auto-confirm
+  when the reviewer emits a bounded allow for the exact pending request; denial,
+  mismatched requests, Bash, and network scopes do not use that bridge. A later
+  call does not inherit a scope grant.
 - Denial and reviewer failure do not execute an unapproved operation. Do not approve
   real destructive operations merely to test the dialog.
 - Native child launches retain the required extensions; external runners are blocked.
 - Nix daemon access from sandboxed Bash fails rather than retrying outside isolation.
 
-Local checks do not establish live reviewer or child-agent sandbox behavior.
+The lockfile pins reviewer 0.26.0; it advertises Pi `^1.1` and permission-system
+`>=40.0.2` peers. The offline bundle check can prove SDK loading and required-child
+registration, but not invoke inference or exercise a live TUI dialog. This repo's
+pinned scope-sandbox source remains unchanged at `60d50c7`; its unpublished follow-up
+integration is not included. Local checks do not establish live reviewer, TUI
+bridge, or child-agent sandbox behavior.

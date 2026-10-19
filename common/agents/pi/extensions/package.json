@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@gotgenes/pi-permission-system": "40.2.2",
-    "@mzwing/pi-permission-auto-review": "0.9.1",
+    "@erichll/pi-auto-review": "0.26.0",
     "pi-cliproxyapi-provider": "latest",
     "pi-subagents": "latest",
     "pi-vim": "latest",

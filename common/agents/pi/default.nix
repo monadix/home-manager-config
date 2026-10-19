@@ -71,7 +71,7 @@ in
         authHeader = true;
       };
       ".pi/agent/extensions/pi-permission-system/config.json".text = builtins.toJSON {
-        authorizerChain = [ "auto-review" ];
+        authorizerChain = [ "pi-auto-review" ];
         permission = {
           "*" = "ask";
           read = "allow";
@@ -86,12 +86,12 @@ in
           scope_sandbox_authorize = "ask";
         };
       };
-      ".pi/agent/extensions/pi-permission-auto-review/config.json".text = builtins.toJSON {
-        provider = "cpa";
-        model = "codex-auto-review";
+      ".pi/agent/extensions/pi-auto-review/config.json".text = builtins.toJSON {
+        model = "cpa/codex-auto-review";
         reasoning = "low";
         timeoutMs = 45000;
-        includeBaselinePolicy = true;
+        failureMode = "defer";
+        autoConfirmBoundedAllows = [ "external_directory" "path" ];
       };
       ".pi/agent/extensions/pi-scope-sandbox/config.json".text = builtins.toJSON {
         mode = "workspace-write";
@@ -102,7 +102,7 @@ in
         bwrap = "${pkgs.bubblewrap}/bin/bwrap";
         shell = "${pkgs.bash}/bin/bash";
         # Workflow children may omit ambient extensions; keep their reviewer.
-        childExtensions = [ "${extensions}/lib/pi-extensions/node_modules/@mzwing/pi-permission-auto-review/dist/index.js" ];
+        childExtensions = [ "${extensions}/lib/pi-extensions/node_modules/@erichll/pi-auto-review/src/index.ts" ];
       };
     };
 

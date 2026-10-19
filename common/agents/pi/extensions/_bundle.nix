@@ -45,6 +45,8 @@ pkgs.buildNpmPackage {
     const modules = process.env.out + '/lib/pi-extensions/node_modules/';
     const parent = pathToFileURL(modules + 'pi-scope-sandbox/index.ts').href;
     assert.ok(!existsSync(modules + '@fadouse/pi-permission'), 'old permission stack must not be bundled');
+    assert.ok(!existsSync(modules + '@mzwing/pi-permission-auto-review'), 'retired reviewer must not be bundled');
+    assert.ok(existsSync(modules + '@erichll/pi-auto-review/src/index.ts'), 'pinned reviewer entry point must exist');
     const host = '${piRoot}';
     const peers = [
       ['@earendil-works/pi-ai', host + '/node_modules/@earendil-works/pi-ai', 'Type', 'object'],
@@ -82,10 +84,10 @@ pkgs.buildNpmPackage {
     const cwd = join(root, 'workspace');
     process.env.PI_CODING_AGENT_DIR = agentDir;
     process.env.PI_PERMISSION_SYSTEM_POLICY_AGENT_DIR = agentDir;
-    for (const path of [cwd, join(agentDir, 'extensions/pi-permission-system'), join(agentDir, 'extensions/pi-permission-auto-review'), join(agentDir, 'extensions/pi-scope-sandbox')]) mkdirSync(path, { recursive: true });
-    const reviewer = modules + '@mzwing/pi-permission-auto-review/dist/index.js';
-    writeFileSync(join(agentDir, 'extensions/pi-permission-system/config.json'), JSON.stringify({ authorizerChain: ['auto-review'] }));
-    writeFileSync(join(agentDir, 'extensions/pi-permission-auto-review/config.json'), JSON.stringify({ provider: 'cpa', model: 'codex-auto-review' }));
+    for (const path of [cwd, join(agentDir, 'extensions/pi-permission-system'), join(agentDir, 'extensions/pi-auto-review'), join(agentDir, 'extensions/pi-scope-sandbox')]) mkdirSync(path, { recursive: true });
+    const reviewer = modules + '@erichll/pi-auto-review/src/index.ts';
+    writeFileSync(join(agentDir, 'extensions/pi-permission-system/config.json'), JSON.stringify({ authorizerChain: ['pi-auto-review'] }));
+    writeFileSync(join(agentDir, 'extensions/pi-auto-review/config.json'), JSON.stringify({ model: 'cpa/codex-auto-review', reasoning: 'low', timeoutMs: 45000, failureMode: 'defer', autoConfirmBoundedAllows: ['external_directory', 'path'] }));
     writeFileSync(join(agentDir, 'extensions/pi-scope-sandbox/config.json'), JSON.stringify({ bwrap: '${pkgs.bubblewrap}/bin/bwrap', shell: '${pkgs.bash}/bin/bash', childExtensions: [reviewer] }));
     let session;
     try {

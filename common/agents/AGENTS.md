@@ -10,6 +10,8 @@ files to understand its structure, conventions, and the purpose of the file
 being edited. Keep changes within the requested scope and preserve existing
 work. Choose documentation placement based on the repository's conventions;
 do not treat the README as a default destination for setup or pipeline details.
+Follow referenced guidelines relevant to the change; existing files may reflect
+outdated conventions.
 
 Before committing, check repository guidance and recent commit messages, and
 follow their convention.

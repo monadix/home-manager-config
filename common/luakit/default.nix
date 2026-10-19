@@ -1,6 +1,8 @@
-{ pkgs, ... }:
+{ pkgs, webkit-dev, ... }:
 let
-  luakit = pkgs.luakit.overrideAttrs (oldAttrs: {
+  luakit = (pkgs.luakit.override {
+    webkitgtk_4_1 = webkit-dev.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  }).overrideAttrs (oldAttrs: {
     src = pkgs.fetchFromGitHub {
       owner = "monadix";
       repo = "luakit";

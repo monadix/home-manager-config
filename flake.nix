@@ -6,6 +6,8 @@
 
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
+    webkit-dev.url = "github:monadix/webkitgtk-4.1-libwebrtc-nix/685838c2ffcecc0407ec931788eda0d31d427ecb";
+
     nixpkgs-stable.url = "github:NixOS/nixpkgs/25.11";
 
     nixpkgs-master.url = "github:NixOS/nixpkgs";
@@ -31,6 +33,7 @@
   outputs = { 
     assets,
     nixpkgs,
+    webkit-dev,
     nixpkgs-stable,
     nixpkgs-master,
     home-manager,
@@ -62,6 +65,7 @@
         _module.args = {
           inherit
             system
+            webkit-dev
             assets
             pkgsStable
             pkgsMaster
@@ -84,6 +88,7 @@
         extraSpecialArgs = {
           inherit
             system
+            webkit-dev
             assets
             pkgsStable
             pkgsMaster

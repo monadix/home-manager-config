@@ -28,6 +28,9 @@ let
         EXA_API_KEY="$( ${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.exa-api-key.path} )" || exit 1
         test -n "$EXA_API_KEY" || exit 1
         export EXA_API_KEY
+        DEEPSEEK_API_KEY="$( ${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.deepseek-api-key.path} )" || exit 1
+        test -n "$DEEPSEEK_API_KEY" || exit 1
+        export DEEPSEEK_API_KEY
       '' + lib.optionalString (cfg.cpaApiKeySecret != null) ''
         CLIPROXYAPI_API_KEY="$( ${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.${cfg.cpaApiKeySecret}.path} )" || exit 1
         test -n "$CLIPROXYAPI_API_KEY" || exit 1
@@ -56,6 +59,7 @@ in
 
     sops.secrets = {
       context7-api-key = { };
+      deepseek-api-key = { };
       exa-api-key = { };
       internal-cpa-url = { };
     } // lib.optionalAttrs (cfg.cpaApiKeySecret != null) {

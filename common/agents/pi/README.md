@@ -80,6 +80,16 @@ that file so the endpoint does not enter the Nix store. Update the endpoint with
 `sops secrets/secrets.yaml`. Do not put plaintext keys or internal URLs in Nix
 configuration.
 
+## SOPS DeepSeek key
+
+Add an encrypted `deepseek-api-key` entry using `sops secrets/secrets.yaml`
+before activation. The Pi wrapper reads this secret at launch into
+`DEEPSEEK_API_KEY`; only its path enters the Nix store. Missing/empty secrets
+prevent startup. Restart Pi after activation and select DeepSeek with `/model`.
+A saved DeepSeek credential in `auth.json` takes precedence; use `/logout`
+for DeepSeek to remove it if you want to use the SOPS-backed key.
+The default provider remains CPA.
+
 ## Context7 and search credentials
 
 Pi's native MCP client connects to Context7 using the existing SOPS

@@ -89,6 +89,7 @@ local function install(view, existing)
     states[view] = s
     view:add_signal("destroy", function () states[view] = nil end)
     view:add_signal("load-status", function (_, status)
+        if s.lazy_restored and not webview.has_load_block(view) then s.lazy_restored = nil end
         if status == "provisional" then
             s.generation = s.generation + 1
             s.pending = nil
@@ -238,9 +239,10 @@ tab.label_subs.title = function (tl)
     end
     local s = view and states[view]
     if not s then return original_title(tl) end
-    local title = s.sleeping and ("[z] " .. escape(s.sleeping.title or s.sleeping.uri))
-                  or original_title(tl)
-    local color = s.sleeping and GRAY or s.override == "keep" and YELLOW or
+    local unloaded = s.sleeping or (s.lazy_restored and webview.has_load_block(view))
+    local title = s.sleeping and escape(s.sleeping.title or s.sleeping.uri) or original_title(tl)
+    if unloaded then title = "[z] " .. title end
+    local color = unloaded and GRAY or s.override == "keep" and YELLOW or
         s.override == "unload" and PURPLE or s.reason and GREEN
     return color and ('<span foreground="' .. color .. '">' .. title .. '</span>') or title
 end
@@ -308,7 +310,10 @@ session.add_signal("save", function (saved)
 end)
 session.add_signal("restore", function (saved)
     for w, win in pairs(saved) do
-        for i, view in ipairs(w.tabs.children) do restore_metadata(view, win.open[i]) end
+        for i, view in ipairs(w.tabs.children) do
+            states[view].lazy_restored = webview.has_load_block(view)
+            restore_metadata(view, win.open[i])
+        end
     end
 end)
 undoclose.add_signal("save-item", function (view, item)

@@ -29,6 +29,8 @@ in
   xdg.configFile."luakit/userconf.lua".text = ''
     require("settings").application.prefer_dark_mode = true
     require("settings").webview.enable_media_stream = true
+    -- Restore tab numbers hidden by the default tab_favicons module.
+    require("lousy.widget.tab").label_format = '<span foreground="{index_fg}" font="Monospace">{index} </span>{title}'
     require("modules.session_autosave")
     require("modules.media_permissions")
     require("modules.download_status")

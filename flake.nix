@@ -6,7 +6,7 @@
 
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    webkit-dev.url = "github:monadix/webkitgtk-4.1-libwebrtc-nix/672dce834aa57e7fb8e2453980842937a1024304";
+    webkit-dev.url = "github:monadix/webkitgtk-4.1-libwebrtc-nix/9e505662b26f8de3e5362f380620cb8909782dcd";
 
     nixpkgs-stable.url = "github:NixOS/nixpkgs/25.11";
 

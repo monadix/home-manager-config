@@ -167,17 +167,17 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1792405078,
-        "narHash": "sha256-STI4gSabOvdK8T55gL3lH8f8feYN0cc5HDx5LhFhMjA=",
+        "lastModified": 1792562866,
+        "narHash": "sha256-kncgeFfgISPDJtXgcqjZEaFdPmyhj6PTcYdN5MzZ43k=",
         "owner": "monadix",
         "repo": "webkitgtk-4.1-libwebrtc-nix",
-        "rev": "672dce834aa57e7fb8e2453980842937a1024304",
+        "rev": "9e505662b26f8de3e5362f380620cb8909782dcd",
         "type": "github"
       },
       "original": {
         "owner": "monadix",
         "repo": "webkitgtk-4.1-libwebrtc-nix",
-        "rev": "672dce834aa57e7fb8e2453980842937a1024304",
+        "rev": "9e505662b26f8de3e5362f380620cb8909782dcd",
         "type": "github"
       }
     }

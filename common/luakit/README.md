@@ -55,6 +55,13 @@ Keep WebProcess module files inside Luakit's configuration directory so the
 patched sandbox can read them. Copy experiments from elsewhere rather than
 symlinking to a location outside the sandbox's allowed paths.
 
+## Download status
+
+`modules.download_status` shows combined download size, percentage (when all
+active sizes are known), and speed in the status bar. It updates every 300 ms
+and disappears when no downloads are active. Use `:downloads` for individual
+files and download controls.
+
 ## Automatic tab unloading
 
 `modules.auto_unload` unloads eligible background tabs after 30 minutes.

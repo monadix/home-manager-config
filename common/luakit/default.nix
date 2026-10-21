@@ -31,11 +31,13 @@ in
     require("settings").webview.enable_media_stream = true
     require("modules.session_autosave")
     require("modules.media_permissions")
+    require("modules.download_status")
     require("modules.auto_unload")
   '';
 
   xdg.configFile."luakit/modules/session_autosave.lua".source = ./modules/session_autosave.lua;
   xdg.configFile."luakit/modules/media_permissions.lua".source = ./modules/media_permissions.lua;
+  xdg.configFile."luakit/modules/download_status.lua".source = ./modules/download_status.lua;
   xdg.configFile."luakit/modules/auto_unload.lua".source = ./modules/auto_unload.lua;
   xdg.configFile."luakit/modules/auto_unload_probe.js".source = ./modules/auto_unload_probe.js;
 

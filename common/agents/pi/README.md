@@ -7,8 +7,9 @@ Codex remains enabled. Pi uses the native Home Manager module, shared
 working preferences, CPA (`gpt-6.1-sol`, medium reasoning), and pinned npm
 packages. No vLLM provider is declared or removed. Existing authentication,
 sessions, web-search credentials, and extension state stay local. Activation
-merges CPA context overrides into writable `models.json`, preserving all other
-providers and model metadata (and backing up the original privately).
+merges CPA context overrides and a 500,000-token OpenAI `gpt-6.1-sol` override
+into writable `models.json`, preserving unrelated providers and model metadata
+(and backing up the original privately).
 Defaults match Codex discovery and CLIProxyAPI's model catalog:
 
 | Model | Context tokens |

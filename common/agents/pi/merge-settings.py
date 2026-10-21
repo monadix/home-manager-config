@@ -42,6 +42,11 @@ def merge_models(current):
         overrides[model] = {**overrides.get(model, {}), "contextWindow": context}
     cpa["modelOverrides"] = overrides
     providers["cpa"] = cpa
+    openai = dict(providers.get("openai", {}))
+    overrides = dict(openai.get("modelOverrides", {}))
+    overrides["gpt-6.1-sol"] = {**overrides.get("gpt-6.1-sol", {}), "contextWindow": 500000}
+    openai["modelOverrides"] = overrides
+    providers["openai"] = openai
     return {**current, "providers": providers}
 
 

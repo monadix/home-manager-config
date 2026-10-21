@@ -76,8 +76,25 @@ class SettingsTests(unittest.TestCase):
             {"id": "other"}, {"id": "codex-auto-review", "contextWindow": 64000},
         ]}}}
         merged = module.merge_models(current)
-        self.assertEqual(merged["providers"]["openai"], current["providers"]["openai"])
-        self.assertNotIn("openai", module.merge_models({})["providers"])
+        self.assertEqual(merged["providers"]["openai"]["headers"], current["providers"]["openai"]["headers"])
+        self.assertEqual(merged["providers"]["openai"]["models"], current["providers"]["openai"]["models"])
+        self.assertEqual(module.merge_models({})["providers"]["openai"]["modelOverrides"], {
+            "gpt-6.1-sol": {"contextWindow": 500000},
+        })
+        self.assertNotIn("modelOverrides", current["providers"]["openai"])
+        self.assertEqual(module.merge_models(merged), merged)
+
+    def test_openai_override_preserves_existing_metadata(self):
+        current = {"providers": {"openai": {"modelOverrides": {
+            "gpt-6.1-sol": {"reasoning": True, "contextWindow": 272000},
+            "other": {"contextWindow": 128000},
+        }}}}
+        merged = module.merge_models(current)
+        self.assertEqual(merged["providers"]["openai"]["modelOverrides"], {
+            "gpt-6.1-sol": {"reasoning": True, "contextWindow": 500000},
+            "other": {"contextWindow": 128000},
+        })
+        self.assertEqual(current["providers"]["openai"]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 272000)
         self.assertEqual(module.merge_models(merged), merged)
 
     def test_activation_backup_mutability_and_invalid_input(self):

@@ -16,6 +16,11 @@ outdated conventions.
 Before committing, check repository guidance and recent commit messages, and
 follow their convention.
 
+For Git operations, use the configured SSH agent and askpass flow. Askpass
+prompts are expected, and the user should approve SSH operations manually when
+prompted. Do not force `BatchMode`, suppress authentication prompts, or switch
+to HTTPS tokens as an authentication workaround unless explicitly requested.
+
 Prefer the smallest change that fully satisfies the request. Add documentation,
 rules, or abstractions only when they meet a concrete need; avoid repeating
 existing guidance. Keep feature documentation proportional to the feature's

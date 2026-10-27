@@ -58,16 +58,18 @@ class SettingsTests(unittest.TestCase):
             "cpa": {"modelOverrides": {
                 "other": {"contextWindow": 128000},
                 "gpt-6.1-sol": {"reasoning": True, "contextWindow": 128000},
+                "gpt-6.1-terra": {"name": "Local Terra", "contextWindow": 128000},
             }},
         }}
         merged = module.merge_models(current)
         self.assertEqual(merged["providers"]["local"], current["providers"]["local"])
         overrides = merged["providers"]["cpa"]["modelOverrides"]
-        self.assertEqual(overrides["gpt-6.1-sol"], {"reasoning": True, "contextWindow": 500000})
+        self.assertEqual(overrides["gpt-6.1-sol"], {"reasoning": True, "contextWindow": 872000})
+        self.assertEqual(overrides["gpt-6.1-terra"], {"name": "Local Terra", "contextWindow": 872000})
         self.assertEqual(overrides["other"], {"contextWindow": 128000})
         for model in ["gpt-6-sol", "gpt-5.6-sol", "gpt-5.5"]:
             self.assertEqual(overrides[model]["contextWindow"], 272000)
-        self.assertEqual(len(overrides), 5)
+        self.assertEqual(len(overrides), 6)
         self.assertEqual(module.merge_models(merged), merged)
         self.assertEqual(current["providers"]["cpa"]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 128000)
 
@@ -150,8 +152,9 @@ class SettingsTests(unittest.TestCase):
             "gpt-6.1-terra": {"name": "Local Terra", "contextWindow": 872000},
             "other": {"contextWindow": 128000},
         })
-        for provider in ("openai", "cpa"):
-            self.assertEqual(merged["providers"][provider]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 500000)
+        self.assertEqual(merged["providers"]["openai"]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 500000)
+        for model in ("gpt-6.1-sol", "gpt-6.1-terra"):
+            self.assertEqual(merged["providers"]["cpa"]["modelOverrides"][model]["contextWindow"], 872000)
         self.assertEqual(current, original)
         self.assertEqual(module.merge_models(merged), merged)
 

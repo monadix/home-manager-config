@@ -32,9 +32,10 @@ def merge_models(current):
     providers = dict(current.get("providers", {}))
     cpa = dict(providers.get("cpa", {}))
     overrides = dict(cpa.get("modelOverrides", {}))
-    # Standard contexts advertised by Codex and CLIProxyAPI's model catalog.
+    # Requested 6.1 budgets; older models keep their standard contexts.
     for model, context in {
-        "gpt-6.1-sol": 500000,
+        "gpt-6.1-sol": 872000,
+        "gpt-6.1-terra": 872000,
         "gpt-6-sol": 272000,
         "gpt-5.6-sol": 272000,
         "gpt-5.5": 272000,

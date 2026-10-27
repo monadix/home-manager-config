@@ -77,7 +77,8 @@ class SettingsTests(unittest.TestCase):
         ]}}}
         merged = module.merge_models(current)
         self.assertEqual(merged["providers"]["openai"]["headers"], current["providers"]["openai"]["headers"])
-        self.assertEqual(merged["providers"]["openai"]["models"], current["providers"]["openai"]["models"])
+        self.assertEqual(merged["providers"]["openai"]["models"][:-1], current["providers"]["openai"]["models"])
+        self.assertEqual(merged["providers"]["openai"]["models"][-1]["id"], "gpt-6.1-terra")
         self.assertEqual(module.merge_models({})["providers"]["openai"]["modelOverrides"], {
             "gpt-6.1-sol": {"contextWindow": 500000},
         })
@@ -96,6 +97,45 @@ class SettingsTests(unittest.TestCase):
         })
         self.assertEqual(current["providers"]["openai"]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 272000)
         self.assertEqual(module.merge_models(merged), merged)
+
+    def test_terra_registration_uses_each_providers_api(self):
+        merged = module.merge_models({})
+        for provider, api in (
+            ("openai", "openai-responses"),
+            ("openai-codex", "openai-codex-responses"),
+        ):
+            with self.subTest(provider=provider):
+                model, = merged["providers"][provider]["models"]
+                self.assertEqual(model["id"], "gpt-6.1-terra")
+                self.assertEqual(model["api"], api)
+                self.assertTrue(model["reasoning"])
+                self.assertEqual(model["input"], ["text", "image"])
+                self.assertEqual(model["contextWindow"], 272000)
+                self.assertEqual(model["maxTokens"], 128000)
+        self.assertEqual(module.merge_models(merged), merged)
+
+    def test_terra_registration_preserves_existing_entries_and_provider_settings(self):
+        for provider in ("openai", "openai-codex"):
+            with self.subTest(provider=provider):
+                current = {"providers": {provider: {
+                    "headers": {"custom": "value"},
+                    "models": [
+                        {"id": "other"},
+                        {"id": "gpt-6.1-terra", "contextWindow": 128000,
+                         "samplingParams": {"temperature": 0.5}},
+                    ],
+                }}}
+                original = json.loads(json.dumps(current))
+                merged = module.merge_models(current)
+                settings = merged["providers"][provider]
+                self.assertEqual(settings["headers"], current["providers"][provider]["headers"])
+                self.assertEqual(len(settings["models"]), 2)
+                self.assertEqual(settings["models"][0], {"id": "other"})
+                self.assertEqual(settings["models"][1]["contextWindow"], 128000)
+                self.assertEqual(settings["models"][1]["samplingParams"], {"temperature": 0.5})
+                self.assertTrue(settings["models"][1]["reasoning"])
+                self.assertEqual(current, original)
+                self.assertEqual(module.merge_models(merged), merged)
 
     def test_activation_backup_mutability_and_invalid_input(self):
         with tempfile.TemporaryDirectory() as temporary:

@@ -9,7 +9,13 @@ packages. No vLLM provider is declared or removed. Existing authentication,
 sessions, web-search credentials, and extension state stay local. Activation
 merges CPA context overrides and a 500,000-token OpenAI `gpt-6.1-sol` override
 into writable `models.json`, preserving unrelated providers and model metadata
-(and backing up the original privately).
+(and backing up the original privately). It also registers `gpt-6.1-terra` for
+`openai` and `openai-codex` using their respective Responses APIs, reasoning and
+image input, a conservative 272,000-token context and 128,000-token output limit.
+This bypasses lagging model catalogs without changing the default model or
+credentials. Existing local Terra metadata takes precedence. See the Pi listings
+for [OpenAI](https://pi.dev/models/openai/gpt-6-1-terra) and
+[Codex](https://pi.dev/models/openai-codex/gpt-6-1-terra).
 Defaults match Codex discovery and CLIProxyAPI's model catalog:
 
 | Model | Context tokens |

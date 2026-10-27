@@ -13,8 +13,11 @@ into writable `models.json`, preserving unrelated providers and model metadata
 `openai` and `openai-codex` using their respective Responses APIs, reasoning and
 image input, a conservative 272,000-token context and 128,000-token output limit.
 This bypasses lagging model catalogs without changing the default model or
-credentials. Existing local Terra metadata takes precedence. See the Pi listings
-for [OpenAI](https://pi.dev/models/openai/gpt-6-1-terra) and
+credentials. Existing local Terra metadata takes precedence, except that
+`openai-codex` overrides the context of both `gpt-6.1-sol` and `gpt-6.1-terra` to
+872,000 tokens. This is the requested Pi working budget, not a live verification
+of the subscription endpoint's maximum. OpenAI API and CPA contexts are unchanged.
+See the Pi listings for [OpenAI](https://pi.dev/models/openai/gpt-6-1-terra) and
 [Codex](https://pi.dev/models/openai-codex/gpt-6-1-terra).
 Defaults match Codex discovery and CLIProxyAPI's model catalog:
 

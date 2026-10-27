@@ -71,6 +71,12 @@ def merge_models(current):
         if not any(model["id"] == terra["id"] for model in models):
             settings["models"].append(terra)
         providers[provider] = settings
+    codex = dict(providers["openai-codex"])
+    overrides = dict(codex.get("modelOverrides", {}))
+    for model in ("gpt-6.1-sol", "gpt-6.1-terra"):
+        overrides[model] = {**overrides.get(model, {}), "contextWindow": 872000}
+    codex["modelOverrides"] = overrides
+    providers["openai-codex"] = codex
     return {**current, "providers": providers}
 
 

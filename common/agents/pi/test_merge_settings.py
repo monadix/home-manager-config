@@ -137,6 +137,24 @@ class SettingsTests(unittest.TestCase):
                 self.assertEqual(current, original)
                 self.assertEqual(module.merge_models(merged), merged)
 
+    def test_codex_61_context_overrides_preserve_other_metadata(self):
+        current = {"providers": {"openai-codex": {"modelOverrides": {
+            "gpt-6.1-sol": {"reasoning": True, "contextWindow": 500000},
+            "gpt-6.1-terra": {"name": "Local Terra", "contextWindow": 272000},
+            "other": {"contextWindow": 128000},
+        }}}}
+        original = json.loads(json.dumps(current))
+        merged = module.merge_models(current)
+        self.assertEqual(merged["providers"]["openai-codex"]["modelOverrides"], {
+            "gpt-6.1-sol": {"reasoning": True, "contextWindow": 872000},
+            "gpt-6.1-terra": {"name": "Local Terra", "contextWindow": 872000},
+            "other": {"contextWindow": 128000},
+        })
+        for provider in ("openai", "cpa"):
+            self.assertEqual(merged["providers"][provider]["modelOverrides"]["gpt-6.1-sol"]["contextWindow"], 500000)
+        self.assertEqual(current, original)
+        self.assertEqual(module.merge_models(merged), merged)
+
     def test_activation_backup_mutability_and_invalid_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

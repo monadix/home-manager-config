@@ -10,6 +10,7 @@ let
     defaultProvider = "cpa";
     defaultModel = "gpt-6.1-sol";
     defaultThinkingLevel = "medium";
+    defaultTools = [ "+codemode" ];
     retry = {
       enabled = true;
       maxRetries = 20;
@@ -66,7 +67,7 @@ in
       ${cfg.cpaApiKeySecret} = { };
     };
 
-    home.file = {
+    home.file = (import ./_subagents.nix) // {
       ".pi/agent/mcp.json".text = builtins.toJSON {
         mcpServers.context7 = {
           url = "https://mcp.context7.com/mcp";

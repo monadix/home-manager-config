@@ -26,6 +26,9 @@ rules, or abstractions only when they meet a concrete need; avoid repeating
 existing guidance. Keep feature documentation proportional to the feature's
 scope. Before finishing, review the diff for unnecessary additions.
 
+Document durable repository-specific information, not a narration of the change
+or behavior already clear from nearby configuration.
+
 Prefer existing tools and declarative configuration over custom scripts. Add
 scripting only where those cannot express the required behavior, and keep it
 minimal.
@@ -34,6 +37,10 @@ Questions, requests for ideas, and tentative suggestions (such as "any idea
 how…?" or "maybe add…") are requests for discussion, not permission to edit
 files. Explain or propose changes first. Edit only when the user clearly asks
 you to make the change.
+
+Do not treat “continue” or similar follow-ups as authorization to implement a
+proposal. Present the proposal first, then wait for explicit implementation
+approval before editing files.
 
 Never overcomplicate a task. Use the simplest suitable tool and approach. If
 asked to edit a file and you cannot do so, explain the problem and stop; do not

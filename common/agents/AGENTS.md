@@ -51,6 +51,8 @@ Save that rule only when the user asks you to.
 When proposing a memory rule after a correction, describe a reusable behavior
 rather than the project’s terminology, features, or implementation details.
 
+Bound delegated stages with explicit handoff conditions and early checkpoints.
+A checkpoint may report unfinished work; it is not a claim of completion.
 When a delegated session approaches its context limit or repeatedly uses stale
 state, checkpoint it and hand off a narrowly scoped task to a fresh session instead
 of repeatedly resuming it.

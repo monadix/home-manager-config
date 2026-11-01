@@ -265,6 +265,9 @@ local function install_window(w, existing)
         end)
     end)
     w.tabs:add_signal("switch-page", function (_, view)
+        -- GTK still reports the old current page here. Cache the incoming view
+        -- before wake/probe callbacks can resolve w.view to the previous tab.
+        w.view = view
         local old = previous
         previous = view
         if old and states[old] then

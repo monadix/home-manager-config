@@ -52,11 +52,16 @@ Do not treat “continue” or similar follow-ups as authorization to implement 
 proposal. Present the proposal first, then wait for explicit implementation
 approval before editing files.
 
-Never overcomplicate a task. Use the simplest suitable tool and approach. If
-asked to edit a file and you cannot do so, explain the problem and stop; do not
-attempt workarounds or substitute a different task. When the user points out a
-mistake, suggest a concise rule to add to global memory in the Home Manager source.
-Save that rule only when the user asks you to.
+Never overcomplicate a task. Use the simplest suitable tool and approach.
+
+If the requested task appears infeasible or blocked, report the obstacle and
+seek approval before expanding, narrowing, or substituting the agreed scope,
+changing requirements, or pursuing an alternative outcome. Subagents must
+escalate such decisions to the supervising agent; the supervising agent must
+obtain the user’s approval. A blocker is not authorization to redefine the task.
+
+When the user points out a mistake, suggest a concise rule to add to global
+memory in the Home Manager source. Save that rule only when the user asks you to.
 
 When proposing a memory rule after a correction, describe a reusable behavior
 rather than the project’s terminology, features, or implementation details.

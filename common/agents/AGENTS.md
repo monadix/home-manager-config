@@ -81,4 +81,7 @@ For changes based on an approved visual reference, compare every affected screen
 
 Run available local diagnostics before asking the user to run them.
 
-Use `run0` rather than `sudo` for privileged commands on this system.
+Use `run0` rather than `sudo` for privileged commands only on this local machine,
+where graphical authorization is configured. This preference does not apply to
+remote machines; use their normal privilege-escalation mechanism unless
+explicitly instructed otherwise.

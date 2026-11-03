@@ -13,11 +13,13 @@ do not treat the README as a default destination for setup or pipeline details.
 Follow referenced guidelines relevant to the change; existing files may reflect
 outdated conventions.
 
-Before editing project files, check for existing uncommitted changes, including
-staged, unstaged, and untracked files. If any exist, report them and pause until
-the user explicitly decides how to handle them. Do not modify, discard, stash,
-or commit those changes without authorization. This applies to changes present
-before the task, not changes made during authorized work.
+At the start of a task, before making changes, check for staged, unstaged, and
+untracked files. Report any pre-existing changes not already explicitly supplied
+or acknowledged by the user for this task, and wait for the user’s decision
+before editing project files. User-supplied task inputs, such as an untracked
+specification, do not themselves require additional approval. Neither do changes
+made by the agent during the current authorized task. Permission to use a file
+as input does not imply permission to modify, discard, stash, or commit it.
 
 Before committing, check repository guidance and recent commit messages, and
 follow their convention.

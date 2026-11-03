@@ -128,7 +128,8 @@ Add an encrypted `exa-api-key` entry using `sops secrets/secrets.yaml`.
 The Pi wrapper reads this secret at launch into `EXA_API_KEY`, which takes
 precedence over `exaApiKey` in the existing private local
 `~/.pi/agent/web-search.json`. Missing/empty secrets prevent startup. The local
-file remains untouched, preserving other search settings; its old plaintext
+file stays writable; activation preserves other search settings and adds
+`198.18.0.0/15` to `ssrf.allowRanges` for the local fake-IP proxy. Its old plaintext
 key can be removed after validating the SOPS-backed setup.
 
 ## Native tool access

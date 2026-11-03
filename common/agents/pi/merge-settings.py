@@ -81,6 +81,14 @@ def merge_models(current):
     return {**current, "providers": providers}
 
 
+def merge_web_search(current):
+    ssrf = dict(current.get("ssrf", {}))
+    ranges = list(ssrf.get("allowRanges", []))
+    if "198.18.0.0/15" not in ranges:
+        ranges.append("198.18.0.0/15")
+    return {**current, "ssrf": {**ssrf, "allowRanges": ranges}}
+
+
 def main():
     directory = Path(sys.argv[1])
     directory.mkdir(parents=True, exist_ok=True)
@@ -88,6 +96,7 @@ def main():
     for name, values in (
         ("settings.json", defaults),
         ("models.json", {}),
+        ("web-search.json", {}),
     ):
         path = directory / name
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -96,8 +105,10 @@ def main():
         current = json.loads(path.read_text()) if path.exists() else {}
         if name == "settings.json":
             merged = merge_settings(current, values)
-        else:
+        elif name == "models.json":
             merged = merge_models(current)
+        else:
+            merged = merge_web_search(current)
         if merged == current:
             continue
         if path.exists():

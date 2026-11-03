@@ -158,6 +158,22 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(current, original)
         self.assertEqual(module.merge_models(merged), merged)
 
+    def test_web_search_preserves_settings_and_existing_ranges(self):
+        current = {"exaApiKey": "local-key", "ssrf": {
+            "trustEnvProxy": False, "allowRanges": ["192.168.50.0/24"],
+        }}
+        original = json.loads(json.dumps(current))
+        merged = module.merge_web_search(current)
+        self.assertEqual(merged, {"exaApiKey": "local-key", "ssrf": {
+            "trustEnvProxy": False,
+            "allowRanges": ["192.168.50.0/24", "198.18.0.0/15"],
+        }})
+        self.assertEqual(module.merge_web_search(merged), merged)
+        self.assertEqual(current, original)
+        self.assertEqual(module.merge_web_search({}), {
+            "ssrf": {"allowRanges": ["198.18.0.0/15"]},
+        })
+
     def test_activation_backup_mutability_and_invalid_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -174,6 +190,11 @@ class SettingsTests(unittest.TestCase):
             self.assertEqual(backup.read_text(), original)
             self.assertEqual(stat.S_IMODE(backup.stat().st_mode), 0o600)
             self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            search_path = directory / "web-search.json"
+            self.assertEqual(json.loads(search_path.read_text()), {
+                "ssrf": {"allowRanges": ["198.18.0.0/15"]},
+            })
+            self.assertEqual(stat.S_IMODE(search_path.stat().st_mode), 0o600)
             subprocess.run(command, check=True)
             self.assertFalse((directory / "extensions/pi-permission-classifier/config.json").exists())
             self.assertEqual(backup.read_text(), original)

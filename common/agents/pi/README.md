@@ -81,12 +81,15 @@ rejected rather than overwritten. Do not activate while Pi is saving settings.
 
 Registry extensions are built into the Nix store from `extensions/package-lock.json`
 using `importNpmLock`; lifecycle scripts are disabled. CPA is pinned to reviewed
-fork commit `4dac57b4fd013c5b39b2f5db75a0998ec94bbc69` over Git/SSH, including
-native global `apiKey` expression support. npm's `--install-links` packs that
+fork commit `4dac57b4fd013c5b39b2f5db75a0998ec94bbc69` through an anonymous,
+content-hashed `fetchFromGitHub` source override, including native global `apiKey`
+expression support. The manifest and lock use the same immutable archive URL;
+no Git credentials are needed. npm's `--install-links` packs that
 source into the bundle so host peers resolve normally. Host-provided Pi peers
 are linked from the same runtime rather than installed as separate copies.
-Offline build checks load CPA and verify discovery/registry auth, native peer
-imports, and Exa's compiled CLI/MCP path using synthetic credentials and mocked
+Offline build checks compare all 24 CPA resources byte-for-byte with that source,
+load CPA and verify discovery/registry auth, native peer imports, and Exa's
+compiled CLI/MCP path using synthetic credentials and mocked
 responses, without provider calls.
 Activation replaces previous npm declarations and old bundle paths for these
 extensions, preserving unrelated packages. `pi update` does not update this bundle.

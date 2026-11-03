@@ -1,14 +1,40 @@
 { pkgs }:
 let
   piRoot = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo";
+  cpaSource = pkgs.fetchFromGitHub {
+    owner = "monadix";
+    repo = "pi-cliproxyapi-provider";
+    rev = "4dac57b4fd013c5b39b2f5db75a0998ec94bbc69";
+    hash = "sha256-ANB/Ey8trcOOrPQNFHEZCujuE1+ahpKp4hJCDCZFals=";
+  };
+  cpaUrl = "https://github.com/${cpaSource.owner}/${cpaSource.repo}/archive/${cpaSource.rev}.tar.gz";
+  package = pkgs.lib.importJSON ./package.json;
+  packageLock = pkgs.lib.importJSON ./package-lock.json;
 in
+assert package.dependencies.pi-cliproxyapi-provider == cpaUrl;
+assert packageLock.packages."".dependencies.pi-cliproxyapi-provider == cpaUrl;
+assert packageLock.packages."node_modules/pi-cliproxyapi-provider".resolved == cpaUrl;
+assert cpaSource.urls == [ cpaUrl ] && !(cpaSource ? netrcPhase);
+assert (cpaSource.netrcImpureEnvVars or [ ]) == [ ];
 pkgs.buildNpmPackage {
   pname = "pi-extensions";
   version = "1.0.0";
   src = ./.;
-  npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
+  npmDeps = pkgs.importNpmLock {
+    npmRoot = ./.;
+    packageSourceOverrides."node_modules/pi-cliproxyapi-provider" = cpaSource;
+    # npm repacks this directory; the archive's integrity is not its npm tar hash.
+    # fetchFromGitHub already verifies the unpacked source's recursive hash.
+    packageLock = packageLock // {
+      packages = packageLock.packages // {
+        "node_modules/pi-cliproxyapi-provider" = builtins.removeAttrs
+          packageLock.packages."node_modules/pi-cliproxyapi-provider" [ "integrity" ];
+      };
+    };
+  };
   npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-  # Pack Git sources rewritten to local paths by importNpmLock, not symlinks
+  passthru = { inherit cpaSource; };
+  # Pack sources rewritten to local paths by importNpmLock, not symlinks
   # outside this node_modules tree (where host peers would not resolve).
   npmFlags = [ "--legacy-peer-deps" "--ignore-scripts" "--install-links" ];
   npmRebuildFlags = [ "--ignore-scripts" ];
@@ -32,6 +58,8 @@ pkgs.buildNpmPackage {
   nativeInstallCheckInputs = [ pkgs.nodejs pkgs.python3 ];
   installCheckPhase = ''
     runHook preInstallCheck
+    python3 ${./test-provenance.py} ${cpaSource} \
+      $out/lib/pi-extensions/node_modules/pi-cliproxyapi-provider
     PI_OFFLINE=1 PI_TELEMETRY=0 node --experimental-import-meta-resolve --input-type=module <<'JS'
     import assert from 'node:assert/strict';
     import { realpathSync } from 'node:fs';

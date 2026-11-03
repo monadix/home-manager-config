@@ -24,12 +24,11 @@ as input does not imply permission to modify, discard, stash, or commit it.
 Before committing, check repository guidance and recent commit messages, and
 follow their convention.
 
-Use `gh` only when the user explicitly authorizes it for the task. Perform normal
-remote Git operations through Git over SSH, using the configured SSH agent and
-askpass flow so the user can approve authentication. Askpass prompts are expected;
-do not force `BatchMode` or suppress authentication prompts. Do not substitute
-`gh`, HTTPS tokens, or another authentication method without explicit
-authorization.
+Use `gh` only when the user explicitly authorizes it for the task. Perform remote
+Git operations directly through Git using the configured remote URL and
+authentication flow. Do not change protocols, rewrite remote URLs, or substitute
+another access method without explicit authorization. Allow authentication
+prompts; do not suppress them or force noninteractive authentication.
 
 Prefer the smallest change that fully satisfies the request. Add documentation,
 rules, or abstractions only when they meet a concrete need; avoid repeating

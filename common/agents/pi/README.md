@@ -5,15 +5,15 @@ instructions. Edit that shared file to update both agents.
 
 Codex remains enabled. Pi uses the native Home Manager module, shared
 working preferences, CPA (`gpt-6.1-sol`, medium reasoning), and pinned npm
-packages. No vLLM provider is declared or removed. Existing authentication,
-sessions, web-search credentials, and extension state stay local. Activation
+packages. No vLLM provider is declared or removed. Saved authentication,
+sessions, and extension state stay local. Activation
 merges CPA context overrides and a 500,000-token OpenAI `gpt-6.1-sol` override
 into writable `models.json`, preserving unrelated providers and model metadata
 (and backing up the original privately). It also registers `gpt-6.1-terra` for
 `openai` and `openai-codex` using their respective Responses APIs, reasoning and
 image input, a conservative 272,000-token context and 128,000-token output limit.
-This bypasses lagging model catalogs without changing the default model or
-credentials. Existing local Terra metadata takes precedence, except that
+This bypasses lagging model catalogs without changing the default model.
+Existing local Terra metadata takes precedence, except that
 `openai-codex` and CPA override the context of both `gpt-6.1-sol` and
 `gpt-6.1-terra` to 872,000 tokens. This is the requested Pi working budget, not a
 live verification of either endpoint's maximum. OpenAI API contexts are unchanged.
@@ -80,9 +80,14 @@ links are no longer declared. Malformed runtime settings JSON and symlinks are
 rejected rather than overwritten. Do not activate while Pi is saving settings.
 
 Registry extensions are built into the Nix store from `extensions/package-lock.json`
-using `importNpmLock`; lifecycle scripts are disabled. Host-provided Pi peers are
-linked from the same runtime rather than installed as separate copies. Offline
-build checks verify native peer imports without provider calls.
+using `importNpmLock`; lifecycle scripts are disabled. CPA is pinned to reviewed
+fork commit `4dac57b4fd013c5b39b2f5db75a0998ec94bbc69` over Git/SSH, including
+native global `apiKey` expression support. npm's `--install-links` packs that
+source into the bundle so host peers resolve normally. Host-provided Pi peers
+are linked from the same runtime rather than installed as separate copies.
+Offline build checks load CPA and verify discovery/registry auth, native peer
+imports, and Exa's compiled CLI/MCP path using synthetic credentials and mocked
+responses, without provider calls.
 Activation replaces previous npm declarations and old bundle paths for these
 extensions, preserving unrelated packages. `pi update` does not update this bundle.
 
@@ -96,10 +101,18 @@ with `/model` if needed.
 
 All hosts use the encrypted `pi-cpa-api-key` entry in `secrets/secrets.yaml`,
 selected by `programs.pi-coding-agent.cpaApiKeySecret` in the common configuration.
-The wrapper reads the decrypted secret at launch into `CLIPROXYAPI_API_KEY`;
-only its path enters the Nix store. Missing/empty secrets prevent startup.
-A saved `/login cpa` key takes precedence during model discovery; clear stale
-saved credentials if refresh still returns 401 after activation and restarting Pi.
+The SOPS-rendered global CPA template sets `apiKey` to a native Pi `!command`
+reading the decrypted secret through an absolute `cat` path. Only the command
+and secret path enter the Nix store, not the key. Pi resolves it for discovery,
+model requests and registry-based quota consumers; no duplicate Authorization
+header or CPA models credential is generated. Set the option to `null` to omit
+the command and retain external `CLIPROXYAPI_API_KEY` or `/login cpa` behavior.
+This does not disable endpoint authentication.
+
+A saved `/login cpa` key still takes precedence, including over rotated SOPS
+contents. Saved credentials and OAuth storage are never changed by activation;
+resolve stale saved credentials manually if refresh returns 401. OAuth under
+the same provider ID does not silently fall back to the configured API key.
 The CPA endpoint is stored as `internal-cpa-url` in the same SOPS file and shared
 by all hosts. SOPS renders the provider config at runtime; Home Manager links to
 that file so the endpoint does not enter the Nix store. Update the endpoint with
@@ -109,11 +122,11 @@ configuration.
 ## SOPS DeepSeek key
 
 Add an encrypted `deepseek-api-key` entry using `sops secrets/secrets.yaml`
-before activation. The Pi wrapper reads this secret at launch into
-`DEEPSEEK_API_KEY`; only its path enters the Nix store. Missing/empty secrets
-prevent startup. Restart Pi after activation and select DeepSeek with `/model`.
-A saved DeepSeek credential in `auth.json` takes precedence; use `/logout`
-for DeepSeek to remove it if you want to use the SOPS-backed key.
+before activation. Activation merges its native `!command` into
+`models.json.providers.deepseek.apiKey`, preserving other provider/model metadata.
+Only the command and secret path enter the store. Pi model requests and
+registry-based quota consumers resolve the same credential. A saved DeepSeek
+credential in `auth.json` still takes precedence and is left untouched.
 The default provider remains CPA.
 
 ## Context7 and search credentials
@@ -125,12 +138,24 @@ on the decrypted secret at connection time; no plaintext key enters the store.
 `pi mcp add`. Check connectivity with `pi mcp list` after activation.
 
 Add an encrypted `exa-api-key` entry using `sops secrets/secrets.yaml`.
-The Pi wrapper reads this secret at launch into `EXA_API_KEY`, which takes
-precedence over `exaApiKey` in the existing private local
-`~/.pi/agent/web-search.json`. Missing/empty secrets prevent startup. The local
-file stays writable; activation preserves other search settings and adds
-`198.18.0.0/15` to `ssrf.allowRanges` for the local fake-IP proxy. Its old plaintext
-key can be removed after validating the SOPS-backed setup.
+Activation replaces only `exaApiKey` in writable `~/.pi/agent/web-search.json`
+with the native `!command`, preserving other search settings and adding
+`198.18.0.0/15` to `ssrf.allowRanges` for the local fake-IP proxy. The original
+file is backed up privately once as `.pre-hm`; that backup may retain a previous
+local key. The command takes precedence over ambient `EXA_API_KEY`. Pi's web
+tools and the bundled Exa CLI/MCP consumer share this resolver. CLI/MCP must
+select the same config directory: an explicit `PI_CODING_AGENT_DIR` or an XDG
+config location can select a different file.
+
+The custom secret-exporting Pi wrapper is no longer used. Ordinary Node/tool
+PATH dependencies remain. Missing, empty or unreadable secret files fail at
+credential use, not Pi startup; command-backed models can still appear in the
+picker. Commands reread the stable SOPS paths on each use, so rotation is visible
+without exporting credentials to child processes. Refresh SOPS rendering when
+rotating secrets; reload/restart Pi after changing command/config expressions
+or activating this migration. Subagents using the same home/agent directory
+resolve native credentials without inherited secret environment variables.
+`auth.json` remains writable and unmanaged.
 
 ## Native tool access
 
@@ -146,6 +171,7 @@ Local checks (no provider requests or activation):
 
 ```bash
 python3 -m unittest discover -s common/agents/pi -p 'test_*.py'
+nix build --impure --no-link --expr 'import ./common/agents/pi/_test-credentials.nix { flake = builtins.getFlake ("path:" + toString ./.); }'
 nix build .#homeConfigurations.MDR024.activationPackage
 ```
 

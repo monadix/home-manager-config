@@ -20,24 +20,11 @@ let
     npmCommand = [ "${pkgs.nodejs}/bin/npm" ];
     packages = map (name: "${extensions}/lib/pi-extensions/node_modules/${name}") extensionNames;
   };
-  package = pkgs.symlinkJoin {
-    name = "pi-with-secrets-${pkgs.pi-coding-agent.version}";
-    paths = [ pkgs.pi-coding-agent ];
-    nativeBuildInputs = [ pkgs.makeWrapper ];
-    postBuild = ''
-      wrapProgram $out/bin/pi --run ${lib.escapeShellArg (''
-        EXA_API_KEY="$( ${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.exa-api-key.path} )" || exit 1
-        test -n "$EXA_API_KEY" || exit 1
-        export EXA_API_KEY
-        DEEPSEEK_API_KEY="$( ${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.deepseek-api-key.path} )" || exit 1
-        test -n "$DEEPSEEK_API_KEY" || exit 1
-        export DEEPSEEK_API_KEY
-      '' + lib.optionalString (cfg.cpaApiKeySecret != null) ''
-        CLIPROXYAPI_API_KEY="$( ${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.${cfg.cpaApiKeySecret}.path} )" || exit 1
-        test -n "$CLIPROXYAPI_API_KEY" || exit 1
-        export CLIPROXYAPI_API_KEY
-      '')}
-    '';
+  secretCommand = name:
+    "!${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.${name}.path}";
+  credentials = json.generate "pi-credential-defaults.json" {
+    deepseekApiKey = secretCommand "deepseek-api-key";
+    exaApiKey = secretCommand "exa-api-key";
   };
 in
 {
@@ -52,7 +39,6 @@ in
     programs.pi-coding-agent = {
       enable = true;
       cpaApiKeySecret = "pi-cpa-api-key";
-      inherit package;
       extraPackages = [ pkgs.nodejs ];
       context = ../AGENTS.md;
       # settings.json stays writable for /settings, /model and pi install.
@@ -81,18 +67,20 @@ in
         config.lib.file.mkOutOfStoreSymlink config.sops.templates."pi-cliproxyapi-provider.json".path;
     };
 
-    sops.templates."pi-cliproxyapi-provider.json".content = builtins.toJSON {
+    sops.templates."pi-cliproxyapi-provider.json".content = builtins.toJSON ({
       providerName = "cpa";
       baseUrl = config.sops.placeholder.internal-cpa-url;
       authRequired = true;
       authHeader = true;
-    };
+    } // lib.optionalAttrs (cfg.cpaApiKeySecret != null) {
+      apiKey = secretCommand cfg.cpaApiKeySecret;
+    });
 
     # Reapply declared defaults, preserving other runtime settings and packages.
     # Remove retired permission/reviewer packages and merge CPA context overrides.
     home.activation.piSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${pkgs.python3}/bin/python3 ${./merge-settings.py} \
-        ${lib.escapeShellArg agentDir} ${settings}
+        ${lib.escapeShellArg agentDir} ${settings} ${credentials}
     '';
   };
 }

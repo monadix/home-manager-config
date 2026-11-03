@@ -8,7 +8,9 @@ pkgs.buildNpmPackage {
   src = ./.;
   npmDeps = pkgs.importNpmLock { npmRoot = ./.; };
   npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-  npmFlags = [ "--legacy-peer-deps" "--ignore-scripts" ];
+  # Pack Git sources rewritten to local paths by importNpmLock, not symlinks
+  # outside this node_modules tree (where host peers would not resolve).
+  npmFlags = [ "--legacy-peer-deps" "--ignore-scripts" "--install-links" ];
   npmRebuildFlags = [ "--ignore-scripts" ];
   dontNpmBuild = true;
   installPhase = ''
@@ -27,7 +29,7 @@ pkgs.buildNpmPackage {
   '';
 
   doInstallCheck = true;
-  nativeInstallCheckInputs = [ pkgs.nodejs ];
+  nativeInstallCheckInputs = [ pkgs.nodejs pkgs.python3 ];
   installCheckPhase = ''
     runHook preInstallCheck
     PI_OFFLINE=1 PI_TELEMETRY=0 node --experimental-import-meta-resolve --input-type=module <<'JS'
@@ -36,7 +38,6 @@ pkgs.buildNpmPackage {
     import { pathToFileURL } from 'node:url';
 
     const modules = process.env.out + '/lib/pi-extensions/node_modules/';
-    const parent = pathToFileURL(modules + 'pi-subagents/package.json').href;
     const host = '${piRoot}';
     const peers = [
       ['@earendil-works/pi-ai', host + '/node_modules/@earendil-works/pi-ai', 'Type', 'object'],
@@ -49,12 +50,17 @@ pkgs.buildNpmPackage {
     for (const [name, target, symbol, type] of peers) {
       const packageName = name.replace('/compat', "");
       assert.equal(realpathSync(modules + packageName), realpathSync(target));
-      const resolved = import.meta.resolve(name, parent);
-      assert.ok(resolved.startsWith(pathToFileURL(realpathSync(target) + '/').href), name);
-      assert.equal(typeof (await import(resolved))[symbol], type, name + '.' + symbol);
-      console.log('Host peer import OK:', name);
+      for (const consumer of ['pi-subagents', 'pi-cliproxyapi-provider']) {
+        const parent = pathToFileURL(modules + consumer + '/package.json').href;
+        const resolved = import.meta.resolve(name, parent);
+        assert.ok(resolved.startsWith(pathToFileURL(realpathSync(target) + '/').href), name);
+        assert.equal(typeof (await import(resolved))[symbol], type, name + '.' + symbol);
+        console.log('Host peer import OK:', consumer, name);
+      }
     }
     JS
+    PI_OFFLINE=1 PI_TELEMETRY=0 node ${./test-credentials.mjs} \
+      ${piRoot} $out ${pkgs.coreutils}/bin/cat ${pkgs.python3}/bin/python3 ${../merge-settings.py}
     runHook postInstallCheck
   '';
 }

@@ -28,7 +28,7 @@ def merge_settings(current, defaults):
     return {**current, **defaults, "packages": packages + extras}
 
 
-def merge_models(current):
+def merge_models(current, credentials=None):
     providers = dict(current.get("providers", {}))
     cpa = dict(providers.get("cpa", {}))
     overrides = dict(cpa.get("modelOverrides", {}))
@@ -78,21 +78,29 @@ def merge_models(current):
         overrides[model] = {**overrides.get(model, {}), "contextWindow": 872000}
     codex["modelOverrides"] = overrides
     providers["openai-codex"] = codex
+    if credentials is not None:
+        providers["deepseek"] = {
+            **providers.get("deepseek", {}), "apiKey": credentials["deepseekApiKey"],
+        }
     return {**current, "providers": providers}
 
 
-def merge_web_search(current):
+def merge_web_search(current, credentials=None):
     ssrf = dict(current.get("ssrf", {}))
     ranges = list(ssrf.get("allowRanges", []))
     if "198.18.0.0/15" not in ranges:
         ranges.append("198.18.0.0/15")
-    return {**current, "ssrf": {**ssrf, "allowRanges": ranges}}
+    merged = {**current, "ssrf": {**ssrf, "allowRanges": ranges}}
+    if credentials is not None:
+        merged["exaApiKey"] = credentials["exaApiKey"]
+    return merged
 
 
 def main():
     directory = Path(sys.argv[1])
     directory.mkdir(parents=True, exist_ok=True)
     defaults = json.loads(Path(sys.argv[2]).read_text())
+    credentials = json.loads(Path(sys.argv[3]).read_text()) if len(sys.argv) > 3 else None
     for name, values in (
         ("settings.json", defaults),
         ("models.json", {}),
@@ -106,9 +114,9 @@ def main():
         if name == "settings.json":
             merged = merge_settings(current, values)
         elif name == "models.json":
-            merged = merge_models(current)
+            merged = merge_models(current, credentials)
         else:
-            merged = merge_web_search(current)
+            merged = merge_web_search(current, credentials)
         if merged == current:
             continue
         if path.exists():

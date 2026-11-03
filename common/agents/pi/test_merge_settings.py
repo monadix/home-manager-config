@@ -174,6 +174,80 @@ class SettingsTests(unittest.TestCase):
             "ssrf": {"allowRanges": ["198.18.0.0/15"]},
         })
 
+    def test_native_credentials_preserve_metadata_and_cpa_ownership(self):
+        credentials = {"deepseekApiKey": "!/absolute/cat '/runtime/deepseek'",
+                       "exaApiKey": "!/absolute/cat '/runtime/exa'"}
+        current = {"custom": True, "providers": {
+            "deepseek": {"apiKey": "old", "baseUrl": "https://fixture.invalid",
+                         "models": [{"id": "local", "name": "Kept"}]},
+            "cpa": {"apiKey": "user-owned", "headers": {"X-Custom": "keep"}},
+            "other": {"apiKey": "untouched"},
+        }}
+        original = json.loads(json.dumps(current))
+        merged = module.merge_models(current, credentials)
+        self.assertEqual(merged["providers"]["deepseek"], {
+            **current["providers"]["deepseek"], "apiKey": credentials["deepseekApiKey"],
+        })
+        for provider in ("other", "cpa"):
+            for field, value in current["providers"][provider].items():
+                self.assertEqual(merged["providers"][provider][field], value)
+        self.assertTrue(merged["custom"])
+        self.assertEqual(module.merge_models(merged, credentials), merged)
+        self.assertEqual(current, original)
+        self.assertNotIn("apiKey", module.merge_models({}, credentials)["providers"]["cpa"])
+        search = {"exaApiKey": "old", "provider": "exa", "ssrf": {"trustEnvProxy": False}}
+        merged_search = module.merge_web_search(search, credentials)
+        self.assertEqual(merged_search["exaApiKey"], credentials["exaApiKey"])
+        self.assertEqual(merged_search["provider"], "exa")
+        self.assertFalse(merged_search["ssrf"]["trustEnvProxy"])
+        self.assertEqual(module.merge_web_search(merged_search, credentials), merged_search)
+        self.assertEqual(search["exaApiKey"], "old")
+
+    def test_credential_activation_is_private_idempotent_and_leaves_auth_alone(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            directory = root / "agent"
+            directory.mkdir()
+            auth = directory / "auth.json"
+            # Synthetic opaque fixture: the merge must not even parse auth storage.
+            auth.write_text("opaque login storage fixture")
+            auth_before = auth.stat()
+            (directory / "models.json").write_text('{"providers":{"deepseek":{"custom":true}}}')
+            (directory / "web-search.json").write_text('{"provider":"exa","custom":true}')
+            defaults = root / "defaults.json"
+            defaults.write_text('{"packages":[]}')
+            credentials = root / "credentials.json"
+            values = {"deepseekApiKey": "!/absolute/cat '/runtime/key with spaces'",
+                      "exaApiKey": "!/absolute/cat '/runtime/exa'"}
+            credentials.write_text(json.dumps(values))
+            command = [sys.executable, str(SCRIPT), str(directory), str(defaults), str(credentials)]
+            subprocess.run(command, check=True)
+            states = {p: (p.read_bytes(), p.stat().st_mtime_ns) for p in directory.iterdir()}
+            subprocess.run(command, check=True)
+            for path, state in states.items():
+                self.assertEqual((path.read_bytes(), path.stat().st_mtime_ns), state)
+                if path != auth:
+                    self.assertEqual(stat.S_IMODE(path.stat().st_mode), 0o600)
+            self.assertEqual(auth.stat().st_ino, auth_before.st_ino)
+            self.assertFalse((directory / "auth.json.pre-hm").exists())
+            deepseek = json.loads((directory / "models.json").read_text())["providers"]["deepseek"]
+            self.assertEqual(deepseek, {"custom": True, "apiKey": values["deepseekApiKey"]})
+            search = json.loads((directory / "web-search.json").read_text())
+            self.assertTrue(search["custom"])
+            self.assertEqual(search["exaApiKey"], values["exaApiKey"])
+            # Refuse malformed/symlinked credential target files without replacing them.
+            for name in ("models.json", "web-search.json"):
+                path = directory / name
+                path.write_text("invalid")
+                self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+                self.assertEqual(path.read_text(), "invalid")
+                path.unlink()
+                path.symlink_to(credentials)
+                self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+                self.assertTrue(path.is_symlink())
+                path.unlink()
+                path.write_text("{}")
+
     def test_activation_backup_mutability_and_invalid_input(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

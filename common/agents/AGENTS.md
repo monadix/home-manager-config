@@ -35,8 +35,13 @@ rules, or abstractions only when they meet a concrete need; avoid repeating
 existing guidance. Keep feature documentation proportional to the feature's
 scope. Before finishing, review the diff for unnecessary additions.
 
-Document durable repository-specific information, not a narration of the change
-or behavior already clear from nearby configuration.
+Keep changes aligned with each file’s purpose and intended audience. Include
+only information that serves a concrete, durable need; accuracy alone does not
+justify inclusion. Do not add implementation details, validation procedures,
+internal mechanics, or change narration to user-facing documentation unless users
+need them to use, configure, or troubleshoot the product. Do not merely relocate
+unnecessary content. Before finishing, remove misplaced or disproportionate
+additions; independent review must check these criteria too.
 
 Prefer existing tools and declarative configuration over custom scripts. Add
 scripting only where those cannot express the required behavior, and keep it

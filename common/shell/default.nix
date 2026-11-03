@@ -1,12 +1,14 @@
 { config, ... }:
 {
+  sops.secrets.gh-cli-token = {};
+
   programs = {
     nushell = {
       enable = true;
       configFile.source = ./config.nu;
       extraEnv = ''
-        if ("${config.sops.secrets.github-ro-token.path}" | path exists) {
-          $env.GH_TOKEN = (open --raw "${config.sops.secrets.github-ro-token.path}" | str trim)
+        if ("${config.sops.secrets.gh-cli-token.path}" | path exists) {
+          $env.GH_TOKEN = (open --raw "${config.sops.secrets.gh-cli-token.path}" | str trim)
           $env.GITHUB_TOKEN = $env.GH_TOKEN
         }
       '';

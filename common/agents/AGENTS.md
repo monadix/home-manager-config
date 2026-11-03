@@ -13,6 +13,12 @@ do not treat the README as a default destination for setup or pipeline details.
 Follow referenced guidelines relevant to the change; existing files may reflect
 outdated conventions.
 
+Before editing project files, check for existing uncommitted changes, including
+staged, unstaged, and untracked files. If any exist, report them and pause until
+the user explicitly decides how to handle them. Do not modify, discard, stash,
+or commit those changes without authorization. This applies to changes present
+before the task, not changes made during authorized work.
+
 Before committing, check repository guidance and recent commit messages, and
 follow their convention.
 
@@ -50,6 +56,10 @@ Save that rule only when the user asks you to.
 
 When proposing a memory rule after a correction, describe a reusable behavior
 rather than the project’s terminology, features, or implementation details.
+
+When delegating to subagents, use the main agent’s current provider unless the
+user explicitly requests a different provider. If no suitable subagent is
+available on that provider, ask before switching providers.
 
 Bound delegated stages with explicit handoff conditions and early checkpoints.
 A checkpoint may report unfinished work; it is not a claim of completion.

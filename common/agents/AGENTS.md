@@ -24,10 +24,12 @@ as input does not imply permission to modify, discard, stash, or commit it.
 Before committing, check repository guidance and recent commit messages, and
 follow their convention.
 
-For Git operations, use the configured SSH agent and askpass flow. Askpass
-prompts are expected, and the user should approve SSH operations manually when
-prompted. Do not force `BatchMode`, suppress authentication prompts, or switch
-to HTTPS tokens as an authentication workaround unless explicitly requested.
+Use `gh` only when the user explicitly authorizes it for the task. Perform normal
+remote Git operations through Git over SSH, using the configured SSH agent and
+askpass flow so the user can approve authentication. Askpass prompts are expected;
+do not force `BatchMode` or suppress authentication prompts. Do not substitute
+`gh`, HTTPS tokens, or another authentication method without explicit
+authorization.
 
 Prefer the smallest change that fully satisfies the request. Add documentation,
 rules, or abstractions only when they meet a concrete need; avoid repeating

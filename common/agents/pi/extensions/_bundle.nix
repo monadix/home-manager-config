@@ -11,8 +11,8 @@ let
   usageSource = pkgs.fetchFromGitHub {
     owner = "monadix";
     repo = "pi-universal-usage";
-    rev = "683eb5e5c3d9d66dc178edc83fba119cf81fb7f2";
-    hash = "sha256-d1rsWjrzxYpVo6e50XOEWN57PfzPjV05IZfcZ6X08x8=";
+    rev = "980bfc51205719a422c934a971a3c2e887b516cb";
+    hash = "sha256-tjzDnO0BmoR769WrO9FS/eSJLOKJGR6ryCXjHuLWArw=";
   };
   usageUrl = "https://github.com/${usageSource.owner}/${usageSource.repo}/archive/${usageSource.rev}.tar.gz";
   package = pkgs.lib.importJSON ./package.json;

@@ -66,8 +66,22 @@ try {
     noSkills: true, noThemes: true, noPromptTemplates: true, noContextFiles: true });
   await loader.reload();
   assert.deepEqual(loader.getExtensions().errors, []);
-  ({ session } = await pi.createAgentSession({ cwd: home, agentDir, modelRuntime: runtime,
-    resourceLoader: loader, sessionManager: pi.SessionManager.inMemory(), noTools: 'all' }));
+  // Registration starts a cache-only refresh without awaiting it. Let it finish
+  // before explicit discovery so it cannot supersede the request under test.
+  const startupRefreshes = [];
+  const refresh = runtime.refresh.bind(runtime);
+  runtime.refresh = options => {
+    const pending = refresh(options);
+    startupRefreshes.push(pending);
+    return pending;
+  };
+  try {
+    ({ session } = await pi.createAgentSession({ cwd: home, agentDir, modelRuntime: runtime,
+      resourceLoader: loader, sessionManager: pi.SessionManager.inMemory(), noTools: 'all' }));
+    await Promise.all(startupRefreshes);
+  } finally {
+    runtime.refresh = refresh;
+  }
   const registry = new ModelRegistry(runtime);
   const refreshed = await runtime.refresh({ providers: ['cpa'], allowNetwork: true, force: true });
   assert.equal(refreshed.errors.size, 0);

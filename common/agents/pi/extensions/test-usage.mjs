@@ -29,13 +29,13 @@ for (const resource of pkg.files) {
 const actual = readdirSync(installed, { recursive: true, withFileTypes: true })
   .filter(entry => !entry.isDirectory())
   .map(entry => join(entry.parentPath, entry.name).slice(installed.length + 1));
-assert.equal(expected.length, 32, 'Reviewed usage resource set changed');
+assert.equal(expected.length, 33, 'Reviewed usage resource set changed');
 assert.deepEqual(actual.sort(), expected.sort(), 'Usage package resource set');
 for (const path of expected) {
   assert.equal(lstatSync(join(installed, path)).isSymbolicLink(), false, path);
   assert.deepEqual(readFileSync(join(installed, path)), readFileSync(join(source, path)), path);
 }
-console.log('Usage provenance: all 32 packaged resources byte-identical to pinned source');
+console.log('Usage provenance: all 33 packaged resources byte-identical to pinned source');
 
 const home = await mkdtemp(join(tmpdir(), 'pi-usage-check-'));
 const previousCwd = process.cwd();

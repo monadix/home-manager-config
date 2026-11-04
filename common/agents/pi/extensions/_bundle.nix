@@ -8,6 +8,13 @@ let
     hash = "sha256-ANB/Ey8trcOOrPQNFHEZCujuE1+ahpKp4hJCDCZFals=";
   };
   cpaUrl = "https://github.com/${cpaSource.owner}/${cpaSource.repo}/archive/${cpaSource.rev}.tar.gz";
+  usageSource = pkgs.fetchFromGitHub {
+    owner = "monadix";
+    repo = "pi-universal-usage";
+    rev = "683eb5e5c3d9d66dc178edc83fba119cf81fb7f2";
+    hash = "sha256-d1rsWjrzxYpVo6e50XOEWN57PfzPjV05IZfcZ6X08x8=";
+  };
+  usageUrl = "https://github.com/${usageSource.owner}/${usageSource.repo}/archive/${usageSource.rev}.tar.gz";
   package = pkgs.lib.importJSON ./package.json;
   packageLock = pkgs.lib.importJSON ./package-lock.json;
 in
@@ -16,24 +23,34 @@ assert packageLock.packages."".dependencies.pi-cliproxyapi-provider == cpaUrl;
 assert packageLock.packages."node_modules/pi-cliproxyapi-provider".resolved == cpaUrl;
 assert cpaSource.urls == [ cpaUrl ] && !(cpaSource ? netrcPhase);
 assert (cpaSource.netrcImpureEnvVars or [ ]) == [ ];
+assert package.dependencies.pi-universal-usage == usageUrl;
+assert packageLock.packages."".dependencies.pi-universal-usage == usageUrl;
+assert packageLock.packages."node_modules/pi-universal-usage".resolved == usageUrl;
+assert usageSource.urls == [ usageUrl ] && !(usageSource ? netrcPhase);
+assert (usageSource.netrcImpureEnvVars or [ ]) == [ ];
 pkgs.buildNpmPackage {
   pname = "pi-extensions";
   version = "1.0.0";
   src = ./.;
   npmDeps = pkgs.importNpmLock {
     npmRoot = ./.;
-    packageSourceOverrides."node_modules/pi-cliproxyapi-provider" = cpaSource;
+    packageSourceOverrides = {
+      "node_modules/pi-cliproxyapi-provider" = cpaSource;
+      "node_modules/pi-universal-usage" = usageSource;
+    };
     # npm repacks this directory; the archive's integrity is not its npm tar hash.
     # fetchFromGitHub already verifies the unpacked source's recursive hash.
     packageLock = packageLock // {
       packages = packageLock.packages // {
         "node_modules/pi-cliproxyapi-provider" = builtins.removeAttrs
           packageLock.packages."node_modules/pi-cliproxyapi-provider" [ "integrity" ];
+        "node_modules/pi-universal-usage" = builtins.removeAttrs
+          packageLock.packages."node_modules/pi-universal-usage" [ "integrity" ];
       };
     };
   };
   npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-  passthru = { inherit cpaSource; };
+  passthru = { inherit cpaSource usageSource; };
   # Pack sources rewritten to local paths by importNpmLock, not symlinks
   # outside this node_modules tree (where host peers would not resolve).
   npmFlags = [ "--legacy-peer-deps" "--ignore-scripts" "--install-links" ];
@@ -78,7 +95,7 @@ pkgs.buildNpmPackage {
     for (const [name, target, symbol, type] of peers) {
       const packageName = name.replace('/compat', "");
       assert.equal(realpathSync(modules + packageName), realpathSync(target));
-      for (const consumer of ['pi-subagents', 'pi-cliproxyapi-provider']) {
+      for (const consumer of ['pi-subagents', 'pi-cliproxyapi-provider', 'pi-universal-usage']) {
         const parent = pathToFileURL(modules + consumer + '/package.json').href;
         const resolved = import.meta.resolve(name, parent);
         assert.ok(resolved.startsWith(pathToFileURL(realpathSync(target) + '/').href), name);
@@ -87,6 +104,8 @@ pkgs.buildNpmPackage {
       }
     }
     JS
+    PI_OFFLINE=1 PI_TELEMETRY=0 node ${./test-usage.mjs} \
+      ${piRoot} $out ${usageSource}
     PI_OFFLINE=1 PI_TELEMETRY=0 node ${./test-credentials.mjs} \
       ${piRoot} $out ${pkgs.coreutils}/bin/cat ${pkgs.python3}/bin/python3 ${../merge-settings.py}
     runHook postInstallCheck

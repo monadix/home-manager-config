@@ -24,6 +24,7 @@ let
     "!${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.${name}.path}";
   credentials = json.generate "pi-credential-defaults.json" {
     deepseekApiKey = secretCommand "deepseek-api-key";
+    opencodeGoApiKey = secretCommand "opencode-api-key";
     exaApiKey = secretCommand "exa-api-key";
   };
 in
@@ -47,6 +48,7 @@ in
     sops.secrets = {
       context7-api-key = { };
       deepseek-api-key = { };
+      opencode-api-key = { };
       exa-api-key = { };
       internal-cpa-url = { };
     } // lib.optionalAttrs (cfg.cpaApiKeySecret != null) {

@@ -38,7 +38,7 @@ try {
   const defaults = join(home, 'defaults.json');
   const credentials = join(home, 'credentials.json');
   await writeFile(defaults, '{"packages":[]}');
-  await writeFile(credentials, JSON.stringify({ deepseekApiKey: expression, exaApiKey: expression }));
+  await writeFile(credentials, JSON.stringify({ deepseekApiKey: expression, opencodeGoApiKey: expression, exaApiKey: expression }));
   execFileSync(python, [mergeScript, agentDir, defaults, credentials]);
   const searchPath = join(agentDir, 'web-search.json');
   const searchConfig = JSON.parse(await readFile(searchPath, 'utf8'));
@@ -54,6 +54,7 @@ try {
   };
   process.env.CLIPROXYAPI_API_KEY = 'synthetic-env-must-not-win';
   process.env.DEEPSEEK_API_KEY = 'synthetic-env-must-not-win';
+  process.env.OPENCODE_API_KEY = 'synthetic-env-must-not-win';
   const pi = await import(pathToFileURL(join(host, 'dist/index.js')));
   const { AuthStorage } = await import(pathToFileURL(join(host, 'dist/core/auth-storage.js')));
   const { ModelRegistry } = await import(pathToFileURL(join(host, 'dist/core/model-registry.js')));
@@ -75,14 +76,16 @@ try {
   const deepseek = runtime.getModels('deepseek')[0];
   assert.ok(cpaModel);
   assert.ok(deepseek);
-  for (const model of [cpaModel, deepseek]) {
+  const opencodeGo = runtime.getModels('opencode-go')[0];
+  assert.ok(opencodeGo);
+  for (const model of [cpaModel, deepseek, opencodeGo]) {
     // Same public auth API used by quota consumers; no quota request is sent.
     const auth = await registry.getApiKeyAndHeaders(model);
     assert.equal(auth.ok, true);
     assert.equal(auth.apiKey, 'synthetic-one');
   }
   await writeFile(key, 'synthetic-two\n');
-  for (const provider of ['cpa', 'deepseek']) {
+  for (const provider of ['cpa', 'deepseek', 'opencode-go']) {
     assert.equal(await registry.getApiKeyForProvider(provider), 'synthetic-two');
     await storage.modify(provider, async () => ({ type: 'api_key', key: 'synthetic-saved' }));
     assert.equal(await registry.getApiKeyForProvider(provider), 'synthetic-saved');
@@ -101,7 +104,7 @@ try {
   assert.equal(requests, 2);
   assert.ok(!notifications.some(message => /error|failed/i.test(message)));
   await writeFile(key, '');
-  for (const provider of ['cpa', 'deepseek']) await assert.rejects(() => registry.getProviderAuth(provider));
+  for (const provider of ['cpa', 'deepseek', 'opencode-go']) await assert.rejects(() => registry.getProviderAuth(provider));
   const failed = await runtime.refresh({ providers: ['cpa'], allowNetwork: true, force: true });
   assert.ok(failed.errors.has('cpa'));
   assert.equal(requests, 2);
@@ -109,7 +112,7 @@ try {
   assert.ok(notifications.some(message => /error|failed/i.test(message)));
   assert.equal(requests, 2);
   await rm(key);
-  for (const provider of ['cpa', 'deepseek']) await assert.rejects(() => registry.getProviderAuth(provider));
+  for (const provider of ['cpa', 'deepseek', 'opencode-go']) await assert.rejects(() => registry.getProviderAuth(provider));
   await setCpa(undefined);
   process.env.CLIPROXYAPI_API_KEY = 'synthetic-legacy-env';
   await session.reload();
@@ -117,7 +120,7 @@ try {
   delete process.env.CLIPROXYAPI_API_KEY;
   await storage.modify('cpa', async () => ({ type: 'api_key', key: 'synthetic-login' }));
   assert.equal(await registry.getApiKeyForProvider('cpa'), 'synthetic-login');
-  console.log('CPA/DeepSeek: installed extension, both discovery paths, registry, rotation, saved/OAuth precedence, optional CPA and failures OK');
+  console.log('CPA/DeepSeek/OpenCode Go: installed extension, both discovery paths, registry, rotation, saved/OAuth precedence, optional CPA and failures OK');
 
   // Exercise the native Exa command resolver shipped in this bundle.
   const { createJiti } = await import(pathToFileURL(join(host, 'node_modules/jiti/lib/jiti.mjs')));

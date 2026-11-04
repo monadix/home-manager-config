@@ -9,7 +9,7 @@ let
   fixture = home.extendModules {
     modules = [{
       programs.pi-coding-agent.cpaApiKeySecret = lib.mkForce "fixture-cpa";
-      sops.secrets = lib.genAttrs [ "exa-api-key" "deepseek-api-key" "fixture-cpa" ]
+      sops.secrets = lib.genAttrs [ "exa-api-key" "deepseek-api-key" "opencode-api-key" "fixture-cpa" ]
         (_: { path = lib.mkForce secretPath; });
     }];
   };
@@ -32,7 +32,7 @@ assert !(optionalCpa ? apiKey) && optionalCpa.authRequired && optionalCpa.authHe
 assert !(optional.config.sops.secrets ? pi-cpa-api-key);
 assert !(lib.hasInfix "auth.json" fixture.config.home.activation.piSettings.data);
 assert lib.all (name: fixture.config.sops.secrets.${name}.mode == "0400")
-  [ "exa-api-key" "deepseek-api-key" "fixture-cpa" ];
+  [ "exa-api-key" "deepseek-api-key" "opencode-api-key" "fixture-cpa" ];
 assert fixture.config.sops.templates."pi-cliproxyapi-provider.json".mode == "0400";
 pkgs.runCommand "pi-credential-config-check" {
   nativeBuildInputs = [ pkgs.python3 ];
@@ -56,8 +56,8 @@ pkgs.runCommand "pi-credential-config-check" {
       assert shlex.split(command[1:]) == [os.environ["cat"], str(path)]
       assert subprocess.check_output(command[1:], shell=True, text=True).strip() == "synthetic-path-quoting-fixture"
       assert "synthetic-path-quoting-fixture" not in command
-  assert set(credentials) == {"deepseekApiKey", "exaApiKey"}
-  print("Native package/PATH, optional CPA, SOPS modes and all three shell-quoted path-only commands OK")
+  assert set(credentials) == {"deepseekApiKey", "opencodeGoApiKey", "exaApiKey"}
+  print("Native package/PATH, optional CPA, SOPS modes and all four shell-quoted path-only commands OK")
   PY
   touch $out
 ''

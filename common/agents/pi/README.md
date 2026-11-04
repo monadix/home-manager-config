@@ -132,6 +132,15 @@ registry-based quota consumers resolve the same credential. A saved DeepSeek
 credential in `auth.json` still takes precedence and is left untouched.
 The default provider remains CPA.
 
+## SOPS OpenCode Go key
+
+The encrypted `opencode-api-key` entry in `secrets/secrets.yaml` authenticates
+Pi’s built-in `opencode-go` provider. Activation merges a native `!command` into
+`models.json.providers.opencode-go.apiKey`, keeping the key out of the Nix store
+and preserving other provider settings. Select an `opencode-go` model with
+`/model`; CPA remains the default. Saved OpenCode Go credentials in `auth.json`
+take precedence and are left untouched.
+
 ## Context7 and search credentials
 
 Pi's native MCP client connects to Context7 using the existing SOPS

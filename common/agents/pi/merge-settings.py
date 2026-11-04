@@ -79,9 +79,13 @@ def merge_models(current, credentials=None):
     codex["modelOverrides"] = overrides
     providers["openai-codex"] = codex
     if credentials is not None:
-        providers["deepseek"] = {
-            **providers.get("deepseek", {}), "apiKey": credentials["deepseekApiKey"],
-        }
+        for provider, key in (
+            ("deepseek", "deepseekApiKey"),
+            ("opencode-go", "opencodeGoApiKey"),
+        ):
+            providers[provider] = {
+                **providers.get(provider, {}), "apiKey": credentials[key],
+            }
     return {**current, "providers": providers}
 
 

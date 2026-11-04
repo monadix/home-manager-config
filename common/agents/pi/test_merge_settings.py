@@ -176,17 +176,25 @@ class SettingsTests(unittest.TestCase):
 
     def test_native_credentials_preserve_metadata_and_cpa_ownership(self):
         credentials = {"deepseekApiKey": "!/absolute/cat '/runtime/deepseek'",
+                       "opencodeGoApiKey": "!/absolute/cat '/runtime/opencode'",
                        "exaApiKey": "!/absolute/cat '/runtime/exa'"}
         current = {"custom": True, "providers": {
             "deepseek": {"apiKey": "old", "baseUrl": "https://fixture.invalid",
                          "models": [{"id": "local", "name": "Kept"}]},
             "cpa": {"apiKey": "user-owned", "headers": {"X-Custom": "keep"}},
+            "opencode-go": {"apiKey": "old", "modelOverrides": {"local": {"name": "Kept"}}},
             "other": {"apiKey": "untouched"},
         }}
         original = json.loads(json.dumps(current))
         merged = module.merge_models(current, credentials)
         self.assertEqual(merged["providers"]["deepseek"], {
             **current["providers"]["deepseek"], "apiKey": credentials["deepseekApiKey"],
+        })
+        self.assertEqual(merged["providers"]["opencode-go"], {
+            **current["providers"]["opencode-go"], "apiKey": credentials["opencodeGoApiKey"],
+        })
+        self.assertEqual(module.merge_models({}, credentials)["providers"]["opencode-go"], {
+            "apiKey": credentials["opencodeGoApiKey"],
         })
         for provider in ("other", "cpa"):
             for field, value in current["providers"][provider].items():
@@ -218,6 +226,7 @@ class SettingsTests(unittest.TestCase):
             defaults.write_text('{"packages":[]}')
             credentials = root / "credentials.json"
             values = {"deepseekApiKey": "!/absolute/cat '/runtime/key with spaces'",
+                      "opencodeGoApiKey": "!/absolute/cat '/runtime/opencode'",
                       "exaApiKey": "!/absolute/cat '/runtime/exa'"}
             credentials.write_text(json.dumps(values))
             command = [sys.executable, str(SCRIPT), str(directory), str(defaults), str(credentials)]
@@ -232,6 +241,8 @@ class SettingsTests(unittest.TestCase):
             self.assertFalse((directory / "auth.json.pre-hm").exists())
             deepseek = json.loads((directory / "models.json").read_text())["providers"]["deepseek"]
             self.assertEqual(deepseek, {"custom": True, "apiKey": values["deepseekApiKey"]})
+            opencode = json.loads((directory / "models.json").read_text())["providers"]["opencode-go"]
+            self.assertEqual(opencode, {"apiKey": values["opencodeGoApiKey"]})
             search = json.loads((directory / "web-search.json").read_text())
             self.assertTrue(search["custom"])
             self.assertEqual(search["exaApiKey"], values["exaApiKey"])

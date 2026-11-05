@@ -5,6 +5,39 @@
   lib,
   ... 
 }:
+let
+  idleSuspend = pkgs.writeShellScript "idle-suspend" ''
+    has_battery=false
+    on_external_power=false
+
+    for supply in /sys/class/power_supply/*; do
+      [ -r "$supply/type" ] || continue
+      type=$(<"$supply/type")
+
+      case "$type" in
+        Battery)
+          has_battery=true
+          case "$(<"$supply/status")" in
+            Charging|Full|"Not charging") on_external_power=true ;;
+          esac
+          ;;
+        Mains|USB)
+          if [ "$(<"$supply/online")" = 1 ]; then
+            on_external_power=true
+          fi
+          ;;
+      esac
+    done
+
+    # Desktops (no battery) and machines on external power never suspend
+    # because of idleness.
+    if [ "$has_battery" = false ] || [ "$on_external_power" = true ]; then
+      exit 0
+    fi
+
+    exec ${pkgs.systemd}/bin/systemctl suspend
+  '';
+in
 {
   xsession = {
     enable = true;
@@ -35,7 +68,7 @@
       not-when-audio = true;
       timers = [ {
         delay = 1800;
-        command = "${pkgs.systemd}/bin/systemctl suspend";
+        command = "${idleSuspend}";
       } ];
     };
 

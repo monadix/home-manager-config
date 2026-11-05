@@ -101,5 +101,6 @@ main = xmonad . ewmh $ def
   , ((myModMask, xK_m), spawn "amixer set Master toggle")
 
   , ((myModMask .|. shiftMask, xK_s), spawn "sleep 0.2 && xset dpms force off")
+  , ((myModMask .|. shiftMask, xK_Delete), spawn "systemctl suspend")
   , ((myModMask .|. shiftMask, xK_l), spawn "xautolock -locknow")
   ]

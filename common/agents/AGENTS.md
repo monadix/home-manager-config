@@ -35,6 +35,11 @@ rules, or abstractions only when they meet a concrete need; avoid repeating
 existing guidance. Keep feature documentation proportional to the feature's
 scope. Before finishing, review the diff for unnecessary additions.
 
+Do not add tests, test harnesses, or documentation for code you are changing
+unless the repository already has tests or docs for that area, or the user
+explicitly asks. This governs authoring new tests and docs; running existing
+checks and tests is still expected.
+
 Keep changes aligned with each file’s purpose and intended audience. Include
 only information that serves a concrete, durable need; accuracy alone does not
 justify inclusion. Do not add implementation details, validation procedures,

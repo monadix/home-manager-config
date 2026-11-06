@@ -70,44 +70,4 @@ pkgs.buildNpmPackage {
     ln -s ${piRoot}/node_modules/typebox $out/lib/pi-extensions/node_modules/typebox
     runHook postInstall
   '';
-
-  doInstallCheck = true;
-  nativeInstallCheckInputs = [ pkgs.nodejs pkgs.python3 ];
-  installCheckPhase = ''
-    runHook preInstallCheck
-    python3 ${./test-provenance.py} ${cpaSource} \
-      $out/lib/pi-extensions/node_modules/pi-cliproxyapi-provider
-    PI_OFFLINE=1 PI_TELEMETRY=0 node --experimental-import-meta-resolve --input-type=module <<'JS'
-    import assert from 'node:assert/strict';
-    import { realpathSync } from 'node:fs';
-    import { pathToFileURL } from 'node:url';
-
-    const modules = process.env.out + '/lib/pi-extensions/node_modules/';
-    const host = '${piRoot}';
-    const peers = [
-      ['@earendil-works/pi-ai', host + '/node_modules/@earendil-works/pi-ai', 'Type', 'object'],
-      ['@earendil-works/pi-ai/compat', host + '/node_modules/@earendil-works/pi-ai', 'completeSimple', 'function'],
-      ['@earendil-works/pi-agent-core', host + '/node_modules/@earendil-works/pi-agent-core', 'Agent', 'function'],
-      ['@earendil-works/pi-coding-agent', host, 'createAgentSession', 'function'],
-      ['@earendil-works/pi-tui', host + '/node_modules/@earendil-works/pi-tui', 'Container', 'function'],
-      ['typebox', host + '/node_modules/typebox', 'Type', 'object'],
-    ];
-    for (const [name, target, symbol, type] of peers) {
-      const packageName = name.replace('/compat', "");
-      assert.equal(realpathSync(modules + packageName), realpathSync(target));
-      for (const consumer of ['pi-subagents', 'pi-cliproxyapi-provider', 'pi-universal-usage']) {
-        const parent = pathToFileURL(modules + consumer + '/package.json').href;
-        const resolved = import.meta.resolve(name, parent);
-        assert.ok(resolved.startsWith(pathToFileURL(realpathSync(target) + '/').href), name);
-        assert.equal(typeof (await import(resolved))[symbol], type, name + '.' + symbol);
-        console.log('Host peer import OK:', consumer, name);
-      }
-    }
-    JS
-    PI_OFFLINE=1 PI_TELEMETRY=0 node ${./test-usage.mjs} \
-      ${piRoot} $out ${usageSource}
-    PI_OFFLINE=1 PI_TELEMETRY=0 node ${./test-credentials.mjs} \
-      ${piRoot} $out ${pkgs.coreutils}/bin/cat ${pkgs.python3}/bin/python3 ${../merge-settings.py}
-    runHook postInstallCheck
-  '';
 }

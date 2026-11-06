@@ -44,12 +44,9 @@ Load experiments manually from Luakit's command bar:
 :lua require_web_module("tmp.request_trace_wm")
 ```
 
-Manual loading lasts for the running browser process unless the script explicitly
-writes persistent state. Files in `tmp/` remain on disk across restarts and are
-not loaded at startup. `dofile` executes on every call; module loading through
-`require` is cached, and `require_web_module` also deduplicates module names.
-Restart to reload an edited WebProcess module. For tracing that attaches through
-`page-created`, open a new tab after loading it.
+Manual loading lasts for the running browser process unless the script writes
+persistent state; files in `tmp/` are not loaded at startup. Restart to reload
+an edited WebProcess module.
 
 Keep WebProcess module files inside Luakit's configuration directory so the
 patched sandbox can read them. Copy experiments from elsewhere rather than
@@ -58,9 +55,9 @@ symlinking to a location outside the sandbox's allowed paths.
 ## Download status
 
 `modules.download_status` shows combined download size, percentage (when all
-active sizes are known), and speed in the status bar. It updates every 300 ms
-and disappears when no downloads are active. Use `:downloads` for individual
-files and download controls.
+active sizes are known), and speed in the status bar. It disappears when no
+downloads are active. Use `:downloads` for individual files and download
+controls.
 
 ## Automatic tab unloading
 

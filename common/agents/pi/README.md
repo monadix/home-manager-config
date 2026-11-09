@@ -49,7 +49,9 @@ at use time. Only the command and secret path enter the Nix store, and rotation
 is visible without exporting variables. Missing or unreadable secret files fail
 at credential use, not at startup. Saved `/login` credentials take precedence
 and are never modified; OAuth does not fall back to a configured key. Add
-entries with `sops secrets/secrets.yaml`.
+entries with `sops secrets/secrets.yaml`. CPA accepts only allowlisted command
+names, so its command uses `cat` from `PATH`; the other consumers use an
+absolute path.
 
 | Secret | Used for |
 | --- | --- |

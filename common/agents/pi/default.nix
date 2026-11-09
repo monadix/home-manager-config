@@ -20,12 +20,14 @@ let
     npmCommand = [ "${pkgs.nodejs}/bin/npm" ];
     packages = map (name: "${extensions}/lib/pi-extensions/node_modules/${name}") extensionNames;
   };
-  secretCommand = name:
-    "!${pkgs.coreutils}/bin/cat ${lib.escapeShellArg config.sops.secrets.${name}.path}";
+  secretCommand = cat: name:
+    "!${cat} ${lib.escapeShellArg config.sops.secrets.${name}.path}";
+  # CPA accepts only allowlisted command names, not paths.
+  cpaSecretCommand = secretCommand "cat";
   credentials = json.generate "pi-credential-defaults.json" {
-    deepseekApiKey = secretCommand "deepseek-api-key";
-    opencodeGoApiKey = secretCommand "opencode-api-key";
-    exaApiKey = secretCommand "exa-api-key";
+    deepseekApiKey = secretCommand "${pkgs.coreutils}/bin/cat" "deepseek-api-key";
+    opencodeGoApiKey = secretCommand "${pkgs.coreutils}/bin/cat" "opencode-api-key";
+    exaApiKey = secretCommand "${pkgs.coreutils}/bin/cat" "exa-api-key";
   };
 in
 {
@@ -75,7 +77,7 @@ in
       authRequired = true;
       authHeader = true;
     } // lib.optionalAttrs (cfg.cpaApiKeySecret != null) {
-      apiKey = secretCommand cfg.cpaApiKeySecret;
+      apiKey = cpaSecretCommand cfg.cpaApiKeySecret;
     });
 
     # Reapply declared defaults, preserving other runtime settings and packages.

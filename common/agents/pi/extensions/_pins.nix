@@ -8,12 +8,7 @@
   # Registry version ranges, or fixed GitHub archives. Bumping a GitHub pin
   # requires a new `rev`, its `hash`, and a lockfile update.
   deps = {
-    pi-cliproxyapi-provider = {
-      owner = "monadix";
-      repo = "pi-cliproxyapi-provider";
-      rev = "4dac57b4fd013c5b39b2f5db75a0998ec94bbc69";
-      hash = "sha256-ANB/Ey8trcOOrPQNFHEZCujuE1+ahpKp4hJCDCZFals=";
-    };
+    pi-cliproxyapi-provider = "latest";
     pi-subagents = "latest";
     pi-universal-usage = {
       owner = "monadix";

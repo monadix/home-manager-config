@@ -1,19 +1,19 @@
 # Refresh all automatically managed dependency versions. Review and commit locks.
 update:
     nix flake update
-    just update-pi-extensions update
+    just update-pi-extensions
 
-# Regenerate the extensions lockfile from extensions/_pins.nix. npm runs in a
-# temporary directory against the generated manifest, so no package.json or
-# node_modules is written into the checkout. `update-pi-extensions update`
-# refreshes floating versions; the default only syncs the lock with the pins.
-update-pi-extensions action="install":
+# Sync the extensions lockfile with extensions/_pins.nix.
+lock-pi-extensions: (_lock-pi-extensions "install")
+
+# Refresh the extensions lockfile, including floating versions.
+update-pi-extensions: (_lock-pi-extensions "update")
+
+# Run npm in a temporary directory against the generated manifest, so no
+# package.json or node_modules is written into the checkout.
+_lock-pi-extensions action:
     #!/usr/bin/env bash
     set -euo pipefail
-    case "{{action}}" in
-        install|update) ;;
-        *) echo "usage: just update-pi-extensions [install|update]" >&2; exit 2 ;;
-    esac
     work=$(mktemp -d)
     trap 'rm -rf "$work"' EXIT
     cp "$(nix build --no-link --print-out-paths .#pi-extensions-manifest)/package.json" "$work/"

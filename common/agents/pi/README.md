@@ -73,10 +73,10 @@ proxy. The bundled Exa CLI/MCP must select the same config directory as Pi
 Extension definitions live in `extensions/_pins.nix`; `package.json` is generated
 from it at build time and is not committed. `package-lock.json` holds the
 resolved tree and is committed. After changing a pin or adding an extension, run
-`just update-pi-extensions` to sync the lock; `just update-pi-extensions update`
-refreshes floating versions. `just update` also refreshes `flake.lock`. Both use
-the pinned npm from the `pi-extensions` dev shell. `pi update` does not update
-this Nix-managed bundle.
+`just lock-pi-extensions` to sync the lock; `just update-pi-extensions` refreshes
+floating versions. `just update` also refreshes `flake.lock`. Both use the
+pinned npm from the `pi-extensions` dev shell. `pi update` does not update this
+Nix-managed bundle.
 
 ## Validation
 

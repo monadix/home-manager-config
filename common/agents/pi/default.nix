@@ -4,7 +4,7 @@ let
   json = pkgs.formats.json { };
   agentDir = "${config.home.homeDirectory}/.pi/agent";
   extensions = import ./extensions/_bundle.nix { inherit pkgs; };
-  extensionNames = builtins.attrNames (builtins.fromJSON (builtins.readFile ./extensions/package.json)).dependencies;
+  extensionNames = builtins.attrNames (import ./extensions/_pins.nix).deps;
   settings = json.generate "pi-settings-defaults.json" {
     theme = "dark";
     defaultProvider = "cpa";

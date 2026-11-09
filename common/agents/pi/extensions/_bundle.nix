@@ -1,56 +1,58 @@
 { pkgs }:
 let
+  inherit (pkgs) lib;
   piRoot = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo";
-  cpaSource = pkgs.fetchFromGitHub {
-    owner = "monadix";
-    repo = "pi-cliproxyapi-provider";
-    rev = "4dac57b4fd013c5b39b2f5db75a0998ec94bbc69";
-    hash = "sha256-ANB/Ey8trcOOrPQNFHEZCujuE1+ahpKp4hJCDCZFals=";
+  pins = import ./_pins.nix;
+  gitDeps = lib.filterAttrs (_: dep: builtins.isAttrs dep) pins.deps;
+  sources = builtins.mapAttrs
+    (_: dep: pkgs.fetchFromGitHub { inherit (dep) owner repo rev hash; })
+    gitDeps;
+  urls = builtins.mapAttrs
+    (_: source: "https://github.com/${source.owner}/${source.repo}/archive/${source.rev}.tar.gz")
+    sources;
+  dependencies = builtins.mapAttrs
+    (name: dep: if builtins.isAttrs dep then urls.${name} else dep)
+    pins.deps;
+  manifest = {
+    inherit (pins) name version;
+    private = true;
+    inherit dependencies;
   };
-  cpaUrl = "https://github.com/${cpaSource.owner}/${cpaSource.repo}/archive/${cpaSource.rev}.tar.gz";
-  usageSource = pkgs.fetchFromGitHub {
-    owner = "monadix";
-    repo = "pi-universal-usage";
-    rev = "61df39c57fe429afdbf2fe21565d93ad230309ee";
-    hash = "sha256-yvmP7quqELBW7DiUteHVrPdwSZrJxNIm7f6zZWNYxsM=";
-  };
-  usageUrl = "https://github.com/${usageSource.owner}/${usageSource.repo}/archive/${usageSource.rev}.tar.gz";
-  package = pkgs.lib.importJSON ./package.json;
-  packageLock = pkgs.lib.importJSON ./package-lock.json;
+  packageSourceOverrides = lib.mapAttrs'
+    (name: source: lib.nameValuePair "node_modules/${name}" source)
+    sources;
+  packageLock = lib.importJSON ./package-lock.json;
+  npmRoot = pkgs.runCommand "pi-extensions-npm-root" { } ''
+    mkdir -p $out
+    cp ${pkgs.writeText "package.json" (builtins.toJSON manifest)} $out/package.json
+  '';
+  # npm repacks overridden sources, so their archive integrity no longer
+  # matches. fetchFromGitHub already hashes the unpacked tree.
+  lockPackages = builtins.mapAttrs
+    (path: entry:
+      if packageSourceOverrides ? ${path}
+      then builtins.removeAttrs entry [ "integrity" ]
+      else entry)
+    packageLock.packages;
 in
-assert package.dependencies.pi-cliproxyapi-provider == cpaUrl;
-assert packageLock.packages."".dependencies.pi-cliproxyapi-provider == cpaUrl;
-assert packageLock.packages."node_modules/pi-cliproxyapi-provider".resolved == cpaUrl;
-assert cpaSource.urls == [ cpaUrl ] && !(cpaSource ? netrcPhase);
-assert (cpaSource.netrcImpureEnvVars or [ ]) == [ ];
-assert package.dependencies.pi-universal-usage == usageUrl;
-assert packageLock.packages."".dependencies.pi-universal-usage == usageUrl;
-assert packageLock.packages."node_modules/pi-universal-usage".resolved == usageUrl;
-assert usageSource.urls == [ usageUrl ] && !(usageSource ? netrcPhase);
-assert (usageSource.netrcImpureEnvVars or [ ]) == [ ];
+assert packageLock.packages."".name == pins.name;
+assert lib.all
+  (name: packageLock.packages."node_modules/${name}".resolved == urls.${name})
+  (builtins.attrNames urls);
+assert lib.all (name: !(sources.${name} ? netrcPhase)) (builtins.attrNames sources);
+assert lib.all (name: (sources.${name}.netrcImpureEnvVars or [ ]) == [ ])
+  (builtins.attrNames sources);
 pkgs.buildNpmPackage {
   pname = "pi-extensions";
-  version = "1.0.0";
-  src = ./.;
+  version = pins.version;
+  src = npmRoot;
   npmDeps = pkgs.importNpmLock {
-    npmRoot = ./.;
-    packageSourceOverrides = {
-      "node_modules/pi-cliproxyapi-provider" = cpaSource;
-      "node_modules/pi-universal-usage" = usageSource;
-    };
-    # npm repacks this directory; the archive's integrity is not its npm tar hash.
-    # fetchFromGitHub already verifies the unpacked source's recursive hash.
-    packageLock = packageLock // {
-      packages = packageLock.packages // {
-        "node_modules/pi-cliproxyapi-provider" = builtins.removeAttrs
-          packageLock.packages."node_modules/pi-cliproxyapi-provider" [ "integrity" ];
-        "node_modules/pi-universal-usage" = builtins.removeAttrs
-          packageLock.packages."node_modules/pi-universal-usage" [ "integrity" ];
-      };
-    };
+    package = manifest;
+    inherit packageSourceOverrides;
+    packageLock = packageLock // { packages = lockPackages; };
   };
   npmConfigHook = pkgs.importNpmLock.npmConfigHook;
-  passthru = { inherit cpaSource usageSource; };
+  passthru = { inherit npmRoot; };
   # Pack sources rewritten to local paths by importNpmLock, not symlinks
   # outside this node_modules tree (where host peers would not resolve).
   npmFlags = [ "--legacy-peer-deps" "--ignore-scripts" "--install-links" ];

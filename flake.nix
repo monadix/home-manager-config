@@ -105,5 +105,10 @@
       homeConfigurations = builtins.mapAttrs
         (_: homeConfigurationWith)
         homeModules;
+
+      packages.${system} = {
+        pi-extensions-manifest =
+          (import ./common/agents/pi/extensions/_bundle.nix { inherit pkgs; }).npmRoot;
+      };
     };
 }

@@ -1,7 +1,9 @@
-{ ... }:
+{ pkgsMaster, ... }:
 {
   programs.codex = {
     enable = true;
+    # Temporary until nixos-unstable includes the Codex build fix (nixpkgs#584667).
+    package = pkgsMaster.codex;
     mutableSettings = true;
     context = ./AGENTS.md;
 

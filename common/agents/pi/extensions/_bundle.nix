@@ -1,7 +1,7 @@
-{ pkgs }:
+{ pkgs, pi ? pkgs.pi-coding-agent }:
 let
   inherit (pkgs) lib;
-  piRoot = "${pkgs.pi-coding-agent}/lib/node_modules/pi-monorepo";
+  piRoot = "${pi}/lib/node_modules/pi-monorepo";
   pins = import ./_pins.nix;
   gitDeps = lib.filterAttrs (_: dep: builtins.isAttrs dep) pins.deps;
   sources = builtins.mapAttrs

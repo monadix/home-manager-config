@@ -3,7 +3,24 @@ let
   cfg = config.programs.pi-coding-agent;
   json = pkgs.formats.json { };
   agentDir = "${config.home.homeDirectory}/.pi/agent";
-  extensions = import ./extensions/_bundle.nix { inherit pkgs; };
+  # pi-ai 1.5 declares @earendil-works/pi-schema, but the nixpkgs build of
+  # pi-coding-agent omits it. Async subagents resolve their host peers from this
+  # tree and refuse to launch without it, so install it next to pi-ai.
+  piSchema = pkgs.runCommand "pi-schema-${pkgs.pi-coding-agent.version}" { } ''
+    mkdir -p $out/lib/node_modules/@earendil-works/pi-schema
+    tar --strip-components=1 -xzf ${pkgs.fetchurl {
+      url = "https://registry.npmjs.org/@earendil-works/pi-schema/-/pi-schema-1.5.0.tgz";
+      hash = "sha256-hh923YROkLalBn3C2Cop/THDLN6PPLAwzYGZ7ZQGt48=";
+    }} -C $out/lib/node_modules/@earendil-works/pi-schema
+  '';
+  piPackage = pkgs.pi-coding-agent.overrideAttrs (old: {
+    postInstall = (old.postInstall or "") + ''
+      install -d $out/lib/node_modules/pi-monorepo/node_modules/@earendil-works
+      cp -r ${piSchema}/lib/node_modules/@earendil-works/pi-schema \
+        $out/lib/node_modules/pi-monorepo/node_modules/@earendil-works/
+    '';
+  });
+  extensions = import ./extensions/_bundle.nix { inherit pkgs; pi = piPackage; };
   extensionNames = builtins.attrNames (import ./extensions/_pins.nix).deps;
   settings = json.generate "pi-settings-defaults.json" {
     theme = "dark";
@@ -41,6 +58,7 @@ in
   config = {
     programs.pi-coding-agent = {
       enable = true;
+      package = piPackage;
       cpaApiKeySecret = "pi-cpa-api-key";
       extraPackages = [ pkgs.nodejs ];
       context = ../AGENTS.md;

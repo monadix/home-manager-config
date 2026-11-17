@@ -18,14 +18,15 @@ are HM-managed.
 
 | Model | CPA context |
 | --- | ---: |
-| `gpt-6.1-sol`, `gpt-6.1-terra` | 872,000 |
+| `gpt-6.2-sol`, `gpt-6.2-astra`, `gpt-6.1-sol`, `gpt-6.1-terra` | 872,000 |
 | `gpt-6-sol`, `gpt-5.6-sol`, `gpt-5.5` | 272,000 |
 
 The 872,000-token windows are a requested working budget, not a verified
 endpoint maximum; Pi's compaction policy still reserves room within them.
-Activation also sets the OpenAI API `gpt-6.1-sol` window to 500,000 and
-registers `gpt-6.1-terra` for the `openai` and `openai-codex` providers
-(272,000 context, 128,000 output). Other local model metadata is preserved.
+Activation also sets the OpenAI API `gpt-6.1-sol` and `gpt-6.2-sol` window to
+500,000 and registers `gpt-6.1-terra` and `gpt-6.2-astra` for the `openai` and
+`openai-codex` providers (272,000 context, 128,000 output). Other local model
+metadata is preserved.
 
 ## Subagent presets
 

@@ -32,8 +32,10 @@ def merge_models(current, credentials=None):
     providers = dict(current.get("providers", {}))
     cpa = dict(providers.get("cpa", {}))
     overrides = dict(cpa.get("modelOverrides", {}))
-    # Requested 6.1 budgets; older models keep their standard contexts.
+    # Requested 6.1/6.2 budgets; older models keep their standard contexts.
     for model, context in {
+        "gpt-6.2-sol": 872000,
+        "gpt-6.2-astra": 872000,
         "gpt-6.1-sol": 872000,
         "gpt-6.1-terra": 872000,
         "gpt-6-sol": 272000,
@@ -45,7 +47,8 @@ def merge_models(current, credentials=None):
     providers["cpa"] = cpa
     openai = dict(providers.get("openai", {}))
     overrides = dict(openai.get("modelOverrides", {}))
-    overrides["gpt-6.1-sol"] = {**overrides.get("gpt-6.1-sol", {}), "contextWindow": 500000}
+    for model in ("gpt-6.1-sol", "gpt-6.2-sol"):
+        overrides[model] = {**overrides.get(model, {}), "contextWindow": 500000}
     openai["modelOverrides"] = overrides
     providers["openai"] = openai
     # Explicit entries work even when Pi's remote catalog has not caught up.
@@ -54,27 +57,30 @@ def merge_models(current, credentials=None):
         ("openai-codex", "openai-codex-responses"),
     ):
         settings = dict(providers.get(provider, {}))
-        terra = {
-            "id": "gpt-6.1-terra",
-            "name": "GPT-6.1 Terra",
-            "api": api,
-            "reasoning": True,
-            "input": ["text", "image"],
-            "contextWindow": 272000,
-            "maxTokens": 128000,
-            "cost": {"input": 1, "output": 5, "cacheRead": 0.05, "cacheWrite": 0},
-        }
         models = settings.get("models", [])
-        settings["models"] = [
-            {**terra, **model} if model["id"] == terra["id"] else model
-            for model in models
-        ]
-        if not any(model["id"] == terra["id"] for model in models):
-            settings["models"].append(terra)
+        for entry in (
+            {"id": "gpt-6.1-terra", "name": "GPT-6.1 Terra"},
+            {"id": "gpt-6.2-astra", "name": "GPT-6.2 Astra"},
+        ):
+            model = {
+                **entry,
+                "api": api,
+                "reasoning": True,
+                "input": ["text", "image"],
+                "contextWindow": 272000,
+                "maxTokens": 128000,
+                "cost": {"input": 1, "output": 5, "cacheRead": 0.05, "cacheWrite": 0},
+            }
+            settings["models"] = [
+                {**model, **existing} if existing["id"] == model["id"] else existing
+                for existing in models
+            ]
+            if not any(existing["id"] == model["id"] for existing in models):
+                settings["models"].append(model)
         providers[provider] = settings
     codex = dict(providers["openai-codex"])
     overrides = dict(codex.get("modelOverrides", {}))
-    for model in ("gpt-6.1-sol", "gpt-6.1-terra"):
+    for model in ("gpt-6.2-sol", "gpt-6.2-astra", "gpt-6.1-sol", "gpt-6.1-terra"):
         overrides[model] = {**overrides.get(model, {}), "contextWindow": 872000}
     codex["modelOverrides"] = overrides
     providers["openai-codex"] = codex

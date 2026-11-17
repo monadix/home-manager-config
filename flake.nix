@@ -10,8 +10,6 @@
 
     nixpkgs-stable.url = "github:NixOS/nixpkgs/25.11";
 
-    nixpkgs-master.url = "github:NixOS/nixpkgs";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,7 +33,6 @@
     nixpkgs,
     webkit-dev,
     nixpkgs-stable,
-    nixpkgs-master,
     home-manager,
     sops-nix,
     import-tree,
@@ -53,7 +50,6 @@
 
       pkgs = importPkgsDefaultArgs nixpkgs;
       pkgsStable = importPkgsDefaultArgs nixpkgs-stable;
-      pkgsMaster = importPkgsDefaultArgs nixpkgs-master;
 
       mkHost = host: {
         imports = [
@@ -68,7 +64,6 @@
             webkit-dev
             assets
             pkgsStable
-            pkgsMaster
             telescope-orgmode;
         };
       };
@@ -91,7 +86,6 @@
             webkit-dev
             assets
             pkgsStable
-            pkgsMaster
             telescope-orgmode;
         };
       };

@@ -4,7 +4,6 @@
 
   pkgs,
   pkgsStable,
-  pkgsMaster,
 
   ... 
 }:

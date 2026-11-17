@@ -66,21 +66,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-master": {
-      "locked": {
-        "lastModified": 1794942873,
-        "narHash": "sha256-EG5wPFj2HaOltG3ufzX/7pJ8PRFjPYsuzIEcCV+MW3s=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "45d1eb16ca8fe36cfef9e6256ed3c17012fa7d25",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "nixpkgs-stable": {
       "locked": {
         "lastModified": 1764521362,
@@ -119,7 +104,6 @@
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "nixpkgs": "nixpkgs",
-        "nixpkgs-master": "nixpkgs-master",
         "nixpkgs-stable": "nixpkgs-stable",
         "sops-nix": "sops-nix",
         "telescope-orgmode": "telescope-orgmode",

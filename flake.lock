@@ -161,7 +161,6 @@
       "original": {
         "owner": "monadix",
         "repo": "webkitgtk-4.1-libwebrtc-nix",
-        "rev": "f61b81307dd4bc553e202fbbf57aa1ce8323a592",
         "type": "github"
       }
     }

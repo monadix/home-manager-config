@@ -2,30 +2,57 @@
 -- session/undoclose metadata; there is no separate persistence store.
 local modes = require("modes")
 local window = require("window")
-modes.add_binds("normal", {
-    { ",k", "Toggle keep-loaded protection.", function (w) w:match_cmd("keep-loaded") end },
-    { ",u", "Toggle explicit unload eligibility (bypasses safeguards).", function (w) w:match_cmd("allow-unload") end },
-    { ",s", "Show automatic-unload protection status.", function (w) w:match_cmd("unload-status") end },
-    { ",E", "Clear edit history without exempting current state.", function (w) w:match_cmd("unload-reset-edited") end },
-})
-for _, w in pairs(window.bywidget) do
-    if w.mode and w.mode.name == "normal" then w:update_binds("normal") end
-end
 local webview = require("webview")
 local tab = require("lousy.widget.tab")
 local escape = require("lousy.util").escape
 local session = require("session")
 local undoclose = require("undoclose")
+local settings = require("settings")
 assert(type(undoclose.replace_view) == "function", "auto_unload requires the HM Luakit metadata patch")
-local probe_file = assert(io.open(luakit.config_dir .. "/modules/auto_unload_probe.js", "r"))
-local probe_js = probe_file:read("*a")
-probe_file:close()
 
-local M = { timeout = 30 * 60 }
+local function validator (min)
+    return function (v) local n = tonumber(v); return n ~= nil and n >= min end
+end
+
+settings.register_settings({
+    ["auto_unload.idle_timeout"] = {
+        type = "number", default = 10, validator = validator(0),
+        desc = "Minutes a background tab must stay inactive before it may be unloaded.",
+    },
+    ["auto_unload.max_loaded"] = {
+        type = "number", default = 12, validator = validator(0),
+        desc = "Unload the least recently used background tab above this many loaded tabs; 0 disables.",
+    },
+    ["auto_unload.memory_low_mb"] = {
+        type = "number", default = 1536, validator = validator(0),
+        desc = "Available memory in MiB below which one background tab is unloaded per check.",
+    },
+    ["auto_unload.memory_high_mb"] = {
+        type = "number", default = 2560, validator = validator(0),
+        desc = "Available memory in MiB at which memory-pressure unloading stops.",
+    },
+    ["auto_unload.wake_grace"] = {
+        type = "number", default = 5, validator = validator(0),
+        desc = "Minutes a tab is exempt from count and memory-pressure unloading after loading.",
+    },
+})
+
+local function setting (name) return settings.get_setting("auto_unload." .. name) end
+
+modes.add_binds("normal", {
+    { ",k", "Toggle keep-loaded protection.", function (w) w:match_cmd("keep-loaded") end },
+    { ",u", "Toggle explicit unload eligibility (bypasses safeguards).", function (w) w:match_cmd("allow-unload") end },
+    { ",s", "Show automatic-unload protection status.", function (w) w:match_cmd("unload-status") end },
+})
+for _, w in pairs(window.bywidget) do
+    if w.mode and w.mode.name == "normal" then w:update_binds("normal") end
+end
+
+local M = { pressure = false }
 local states = setmetatable({}, { __mode = "k" })
 local labels = setmetatable({}, { __mode = "kv" })
 local GREEN, YELLOW, PURPLE, GRAY = "#a3be8c", "#d6bb75", "#a99bbd", "#858891"
-local probe, wake, resolving_notebook
+local wake, resolving_notebook
 
 local function link_label(tl, view)
     labels[tl] = view
@@ -49,93 +76,87 @@ local function visible(view)
     return not w or w.tabs[w.tabs:current()] == view
 end
 
-local function downloads_running()
-    local downloads = package.loaded.downloads
-    if not downloads then return false end
-    for d in pairs(downloads.get_all()) do
-        if d.status == "created" or d.status == "started" then return true end
-    end
-    return false
-end
-
-local function native_reason(view, s)
+-- Reasons shown on the tab label. These are also the deterministic protections,
+-- minus the ones that depend on the tab's role rather than its content.
+local function reason(view, s)
     if s.override == "keep" then return "explicit keep loaded" end
-    if webview.has_load_block(view) then return "page load blocked / lazy restored" end
     if s.override == "unload" then return end
+    if webview.has_load_block(view) then return "page load blocked / lazy restored" end
     if s.capture then return "media permission requested (possible call / capture)" end
-    if s.capture_unknown then return "pre-existing tab: capture state unknown; reopen tab to monitor" end
-    if s.edited then return "edited form / document" end
     if view.is_loading then return "page loading" end
     if view.is_playing_audio then return "playing audio" end
-    if not (view.uri or ""):match("^https?://") and not (view.uri or ""):match("^file://") then
+    local uri = view.uri or ""
+    if not uri:match("^https?://") and not uri:match("^file://") then
         return "internal / unsupported page"
     end
-    -- Downloads are managed globally; without a reliable per-tab association,
-    -- conservatively leave all tabs loaded until transfers finish.
-    if downloads_running() then return "download running" end
 end
 
-local function protect(view, s, reason)
-    s.reason = reason
+-- Unload is allowed by default; only determinable state that a reload would
+-- genuinely lose is protected. Use ,k for pages that must stay loaded.
+local function never(view, s)
+    if view.private then return "private tab" end
+    if visible(view) then return "tab is visible" end
+    return reason(view, s)
+end
+
+local function protect(view, s, value)
+    if s.reason == value then return end
+    s.reason = value
     refresh(view)
 end
 
-local function install(view, existing)
+local function with_file(path, pattern)
+    local file = io.open(path, "r")
+    if not file then return nil end
+    local result
+    for line in file:lines() do
+        local value = line:match(pattern)
+        if value then result = tonumber(value); break end
+    end
+    file:close()
+    return result
+end
+
+local function mem_available_mb()
+    local kb = with_file("/proc/meminfo", "^MemAvailable:%s+(%d+)")
+    return kb and kb / 1024
+end
+
+local function install(view)
     if states[view] then return states[view] end
-    local s = {
-        last_active = now(), generation = 0,
-        reason = "safety check pending", capture_unknown = existing or false,
-    }
+    local s = { last_active = now(), wakened_at = now() }
     states[view] = s
     view:add_signal("destroy", function () states[view] = nil end)
     view:add_signal("load-status", function (_, status)
         if s.lazy_restored and not webview.has_load_block(view) then s.lazy_restored = nil end
         if status == "provisional" then
-            s.generation = s.generation + 1
-            s.pending = nil
-            s.reason = "page loading"
+            protect(view, s, "page loading")
         elseif status == "committed" then
-            s.generation = s.generation + 1
-            s.pending = nil
-            s.edited, s.capture, s.observed = false, false, false
-            probe(view, false)
+            s.wakened_at = now()
         elseif status == "finished" then
+            s.wakened_at = now()
             -- WebKit may still report is_loading inside the signal callback.
             luakit.idle_add(function ()
-                if states[view] == s then probe(view, false) end
+                if states[view] == s then protect(view, s, reason(view, s)) end
             end)
         end
         refresh(view)
-    end)
-    -- Cover user interaction during the asynchronous first observer install.
-    -- Only this short unobserved interval uses these conservative native guards.
-    view:add_signal("key-press", function ()
-        if not s.observed and not s.sleeping then
-            s.edited = true
-            protect(view, s, "interaction before edit observation")
-        end
-    end)
-    view:add_signal("button-press", function (_, _, _, context)
-        if not s.observed and context and context.editable and not s.sleeping then
-            s.edited = true
-            protect(view, s, "interaction before edit observation")
-        end
     end)
     view:add_signal("permission-request", function (_, kind)
         if kind == "user-media" then
             -- Do not grant/deny permission here. Protect even if another
             -- handler denies it: there is no capture-ended API in this build.
             s.capture = true
-            protect(view, s, native_reason(view, s))
+            protect(view, s, reason(view, s))
         end
     end)
     view:add_signal("property::is-playing-audio", function ()
-        if view.is_playing_audio then protect(view, s, "playing audio") end
+        protect(view, s, reason(view, s))
     end)
     view:add_signal("switched-page", function ()
         s.last_active = now()
         wake(view)
-        probe(view, false)
+        protect(view, s, reason(view, s))
     end)
     return s
 end
@@ -144,16 +165,20 @@ wake = function (view)
     local s = states[view]
     if not s or not s.sleeping then return end
     s.sleeping = nil
-    s.reason = "restoring page"
+    s.reason = nil
     s.last_active = now()
+    s.wakened_at = now()
     webview.modify_load_block(view, "tmp-auto-unload", false)
+    -- Only a load request starts a renderer. adblock keeps its own block until
+    -- its web module has run, so a queued location alone cannot start one.
+    if webview.has_load_block(view) then view:reload() end
     refresh(view)
 end
 
 local function unload(view, s)
     local w = owner(view)
-    if not w or visible(view) or s.override == "keep" or s.sleeping then return end
-    if native_reason(view, s) or now() - s.last_active < M.timeout then return end
+    if not w or s.sleeping then return end
+    if never(view, s) then return end
     local saved = { uri = view.uri, session_state = view.session_state,
                     title = view.title, private = view.private }
     if not saved.session_state or saved.session_state == "" then
@@ -165,65 +190,36 @@ local function unload(view, s)
     local rs = states[replacement]
     undoclose.replace_view(view, replacement)
     rs.sleeping, rs.reason, rs.override = saved, nil, s.override
-    rs.last_active = s.last_active
+    rs.last_active, rs.wakened_at = s.last_active, 0
     webview.modify_load_block(replacement, "tmp-auto-unload", true)
     -- webview's blocked URI/session_state getters expose this saved state to
     -- the session saver without loading the page.
     webview.set_location(replacement, saved)
     w.tabs:insert(index, replacement)
-    -- Like window.new_tab, bootstrap the blank view's WebProcess so adblock's
-    -- initialization blocker can complete. The saved page remains load-blocked.
-    replacement:reload()
-    -- Do not use close_tab: automatic unloading must not add undo-close items.
+    -- The sleeping tab intentionally starts no renderer; wake() bootstraps one
+    -- only when the tab is shown again.
     w:detach_tab(view, false)
     view:destroy()
     refresh(replacement)
 end
 
-probe = function (view, may_unload, reset_edited)
-    local s = states[view]
-    if not s or s.sleeping then return end
-    if may_unload and s.override == "unload" then unload(view, s); return end
-    if s.pending then s.recheck = true; return end
-    local reason = native_reason(view, s)
-    if reason then protect(view, s, reason) end
-    -- Still install edit listeners when a tab is pinned or playing audio.
-    -- Otherwise an edit made and cleared during protection could be missed.
-    if webview.has_load_block(view) or
-        not (view.uri or ""):match("^(https?)://") and not (view.uri or ""):match("^file://") then
-        return
+-- Least recently used first. Firefox's TabUnloader also reweights by the
+-- processes and memory each tab holds, but WebKit does not tell the UI process
+-- which renderer belongs to which view (view.web_process_id is the PID inside
+-- the sandbox PID namespace, 2 for every page), so ordering stays LRU.
+local function ranked(list)
+    table.sort(list, function (a, b) return a.s.last_active < b.s.last_active end)
+    return list
+end
+
+local function candidates()
+    local list = {}
+    for view, s in pairs(states) do
+        if not s.sleeping and owner(view) and not never(view, s) then
+            list[#list + 1] = { view = view, s = s }
+        end
     end
-    local request = { generation = s.generation, started = now() }
-    s.pending = request
-    local script = probe_js:gsub("AUTO_UNLOAD_RESET_EDITED", reset_edited and "true" or "false")
-    local ok = pcall(function ()
-        view:eval_js(script, { source = "modules/auto_unload_probe.js", callback = function (result, err)
-            if states[view] ~= s or s.pending ~= request or s.generation ~= request.generation then return end
-            s.pending = nil
-            if s.recheck then
-                s.recheck = nil
-                luakit.idle_add(function ()
-                    if states[view] == s then probe(view, false) end
-                end)
-            end
-            if err or type(result) ~= "table" or type(result.reason) ~= "string"
-                or type(result.edited) ~= "boolean" then
-                protect(view, s, "safety check failed")
-                return
-            end
-            s.observed = true
-            if reset_edited then s.edited = result.edited
-            else s.edited = s.edited or result.edited end
-            local blocked = native_reason(view, s) or
-                (s.override ~= "unload" and result.reason ~= "" and result.reason or nil)
-            protect(view, s, blocked)
-            if may_unload and not blocked and not visible(view) then unload(view, s) end
-        end })
-    end)
-    if not ok and s.pending == request then
-        s.pending = nil
-        protect(view, s, "safety check failed")
-    end
+    return list
 end
 
 -- Color the title text, retaining the normal current-tab background, security
@@ -250,40 +246,48 @@ tab.add_signal("build", link_label)
 -- Attach before webview init handlers, especially permission handlers that
 -- return a decision and stop propagation to later listeners.
 widget.add_signal("create", function (view)
-    if view.type == "webview" then install(view, false) end
+    if view.type == "webview" then install(view) end
 end)
-webview.add_signal("init", function (view) install(view, false) end)
+webview.add_signal("init", function (view) install(view) end)
 
-local function install_window(w, existing)
+local function install_window(w, restored)
     local previous = w.tabs[w.tabs:current()]
-    for _, view in ipairs(w.tabs.children) do install(view, existing) end
+    for _, view in ipairs(w.tabs.children) do install(view) end
     w:add_signal("mode-entered", function (_, mode)
         if mode.name ~= "insert" and mode.name ~= "normal" then return end
         local view = w.view
         luakit.idle_add(function ()
-            if states[view] and owner(view) == w then probe(view, false) end
+            if states[view] and owner(view) == w then protect(view, states[view], reason(view, states[view])) end
         end)
     end)
     w.tabs:add_signal("switch-page", function (_, view)
         -- GTK still reports the old current page here. Cache the incoming view
-        -- before wake/probe callbacks can resolve w.view to the previous tab.
+        -- before wake callbacks can resolve w.view to the previous tab.
         w.view = view
         local old = previous
         previous = view
         if old and states[old] then
-            states[old].last_active = now()
-            probe(old, false)
+            local s = states[old]
+            s.last_active = now()
+            protect(old, s, reason(old, s))
+            -- Leave tab switching first; dropping a renderer mid-switch is
+            -- not safe from inside the signal.
+            if s.override == "unload" and not visible(old) then
+                luakit.idle_add(function ()
+                    if states[old] == s and not s.sleeping then unload(old, s) end
+                end)
+            end
         end
         if states[view] then
             states[view].last_active = now()
             wake(view)
-            probe(view, false)
+            protect(view, states[view], reason(view, states[view]))
         end
     end)
-    if existing then
+    if restored then
         for index, view in ipairs(w.tabs.children) do
             local s = states[view]
-            protect(view, s, native_reason(view, s) or s.reason)
+            protect(view, s, reason(view, s))
             -- Refresh indices/labels without changing the actual tab order.
             resolving_notebook = w.tabs
             w.tabs:emit_signal("page-reordered", view, index)
@@ -349,10 +353,9 @@ end
 local function set_override(w, value)
     local view, s = w.view, states[w.view]
     if not s then return end
-    s.override, s.last_probe, s.last_active = value, nil, now()
+    s.override, s.last_active = value, now()
     if value == "keep" then wake(view) end
-    protect(view, s, native_reason(view, s) or "safety check pending")
-    probe(view, false)
+    protect(view, s, reason(view, s))
     if not view.private then
         local ok, err = pcall(session.save)
         if not ok then w:error("Override active, but session save failed: " .. tostring(err)); return end
@@ -372,50 +375,68 @@ modes.add_cmds({
         local s = states[w.view]
         if s then set_override(w, s.override ~= "unload" and "unload" or nil) end
     end },
-    { ":unload-reset-edited", "Clear edit history without exempting current state.", function (w)
-        local s = states[w.view]
-        if not s or s.pending then w:notify("Safety check pending; try again shortly") return end
-        probe(w.view, false, true)
-        w:notify("Edit history reset; changed fields, editor contents and media remain protected")
-    end },
     { ":unload-status", "Explain why this tab is kept loaded.", function (w)
         local s = states[w.view]
         if not s then return end
-        local reason = native_reason(w.view, s) or
-            (s.override == "unload" and "explicit eligibility; safeguards bypassed") or
-            s.reason or "no detected protected state"
-        w:notify("Override: " .. (s.override or "default") .. "; " .. reason ..
-            "; visible tabs are never unloaded; background timeout: 30 minutes")
+        local idle = math.floor((now() - s.last_active) / 60)
+        local loaded = 0
+        for view, other in pairs(states) do
+            if not other.sleeping and owner(view) then loaded = loaded + 1 end
+        end
+        local memory = M.available and string.format("%.0f MiB free%s", M.available,
+            M.pressure and ", memory pressure" or "") or "memory unknown"
+        w:notify(string.format("override: %s; %s; idle %d/%d min; tabs %d/%d; %s",
+            s.override or "default", s.sleeping and "unloaded" or reason(w.view, s) or
+            (visible(w.view) and "visible" or "eligible"), idle,
+            math.floor(setting("idle_timeout")), loaded, math.floor(setting("max_loaded")), memory))
     end },
 })
 
-local poll = timer { interval = 15000 }
-poll:add_signal("timeout", function ()
-    local candidates = {}
-    for view, s in pairs(states) do candidates[#candidates + 1] = { view, s } end
-    for _, pair in ipairs(candidates) do
-        local view, s = pair[1], pair[2]
-        if states[view] == s then
-            if s.pending and now() - s.pending.started >= 10 then
-                s.pending = nil
-                protect(view, s, "safety check timed out")
-            end
-            if not s.sleeping then
-                if visible(view) then
-                    s.last_active = now()
-                    probe(view, false)
-                elseif now() - s.last_active >= M.timeout then
-                    -- Retry background checks at most once per minute; do not
-                    -- wake every inactive renderer on every timer tick.
-                    if not s.last_probe or now() - s.last_probe >= 60 then
-                        s.last_probe = now()
-                        probe(view, true)
-                    end
-                end
-            end
+local function check()
+    local t = now()
+    local idle_limit = setting("idle_timeout") * 60
+    local grace = setting("wake_grace") * 60
+    local max_loaded = setting("max_loaded")
+
+    local available = mem_available_mb()
+    if available then
+        -- Hysteresis: enter pressure below the low watermark, leave it only
+        -- after recovering past the high one, so long builds do not thrash.
+        if M.pressure then
+            if available >= setting("memory_high_mb") then M.pressure = false end
+        elseif available < setting("memory_low_mb") then
+            M.pressure = true
         end
     end
-end)
+    M.available = available
+
+    local loaded = 0
+    for view, s in pairs(states) do
+        if not s.sleeping and owner(view) then
+            if visible(view) then s.last_active = t end
+            loaded = loaded + 1
+            protect(view, s, reason(view, s))
+        end
+    end
+
+    local over_cap = max_loaded > 0 and loaded > max_loaded
+    for _, c in ipairs(ranked(candidates())) do
+        local view, s = c.view, c.s
+        local due = s.override == "unload"
+        if not due and t - (s.wakened_at or 0) >= grace then
+            due = t - s.last_active >= idle_limit or M.pressure or over_cap
+        end
+        if due then
+            unload(view, s)
+            -- One tab per check keeps bursts from cascading.
+            return
+        end
+    end
+end
+
+local poll = timer { interval = 5000 }
+poll:add_signal("timeout", check)
 poll:start()
-M.timer = poll
+-- Exposed for tests and for manual triggering; the timer drives it normally.
+M.timer, M.check = poll, check
 return M

@@ -5,6 +5,7 @@
   programs = {
     nushell = {
       enable = true;
+      loadSessionVariables = false;
       configFile.source = ./config.nu;
       extraEnv = ''
         if ("${config.sops.secrets.gh-cli-token.path}" | path exists) {

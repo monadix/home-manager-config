@@ -59,6 +59,11 @@ active sizes are known), and speed in the status bar. It disappears when no
 downloads are active. Use `:downloads` for individual files and download
 controls.
 
+## Tab URL tooltips
+
+`modules.tab_tooltip` shows a tab's full URI in a tooltip when the tab is
+hovered, which helps identify truncated or inactive tabs.
+
 ## Automatic tab unloading
 
 `modules.auto_unload` unloads eligible background tabs after 30 minutes.

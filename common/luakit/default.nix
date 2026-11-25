@@ -38,12 +38,14 @@ in
     require("lousy.widget.tab").label_format = '<span foreground="{index_fg}" font="Monospace">{index} </span>{title}'
     require("modules.session_autosave")
     require("modules.media_permissions")
+    require("modules.tab_tooltip")
     require("modules.download_status")
     require("modules.auto_unload")
   '';
 
   xdg.configFile."luakit/modules/session_autosave.lua".source = ./modules/session_autosave.lua;
   xdg.configFile."luakit/modules/media_permissions.lua".source = ./modules/media_permissions.lua;
+  xdg.configFile."luakit/modules/tab_tooltip.lua".source = ./modules/tab_tooltip.lua;
   xdg.configFile."luakit/modules/download_status.lua".source = ./modules/download_status.lua;
   xdg.configFile."luakit/modules/auto_unload.lua".source = ./modules/auto_unload.lua;
   xdg.configFile."luakit/modules/auto_unload_probe.js".source = ./modules/auto_unload_probe.js;

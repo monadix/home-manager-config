@@ -41,7 +41,8 @@ local function setting (name) return settings.get_setting("auto_unload." .. name
 
 modes.add_binds("normal", {
     { ",k", "Toggle keep-loaded protection.", function (w) w:match_cmd("keep-loaded") end },
-    { ",u", "Toggle explicit unload eligibility (bypasses safeguards).", function (w) w:match_cmd("allow-unload") end },
+    { ",u", "Toggle explicit unload eligibility (ignores content protections).", function (w) w:match_cmd("allow-unload") end },
+    { ",U", "Unload this tab as soon as it is not visible.", function (w) w:match_cmd("unload-now") end },
     { ",s", "Show automatic-unload protection status.", function (w) w:match_cmd("unload-status") end },
 })
 for _, w in pairs(window.bywidget) do
@@ -92,10 +93,14 @@ local function reason(view, s)
 end
 
 -- Unload is allowed by default; only determinable state that a reload would
--- genuinely lose is protected. Use ,k for pages that must stay loaded.
+-- genuinely lose is protected. Use ,k for pages that must stay loaded and ,u
+-- for a tab whose content protection you want to overrule.
 local function never(view, s)
     if view.private then return "private tab" end
     if visible(view) then return "tab is visible" end
+    -- ,u drops content protection only; timing rules still apply. ,U is an
+    -- explicit request, so it drops both.
+    if s.now then return end
     return reason(view, s)
 end
 
@@ -239,7 +244,7 @@ tab.label_subs.title = function (tl)
     local title = s.sleeping and escape(s.sleeping.title or s.sleeping.uri) or original_title(tl)
     if unloaded then title = "[z] " .. title end
     local color = unloaded and GRAY or s.override == "keep" and YELLOW or
-        s.override == "unload" and PURPLE or s.reason and GREEN
+        (s.now or s.override == "unload") and PURPLE or s.reason and GREEN
     return color and ('<span foreground="' .. color .. '">' .. title .. '</span>') or title
 end
 tab.add_signal("build", link_label)
@@ -271,8 +276,9 @@ local function install_window(w, restored)
             s.last_active = now()
             protect(old, s, reason(old, s))
             -- Leave tab switching first; dropping a renderer mid-switch is
-            -- not safe from inside the signal.
-            if s.override == "unload" and not visible(old) then
+            -- not safe from inside the signal. Only an explicit ,U unloads
+            -- here; ,u still waits for the idle window.
+            if s.now and not visible(old) then
                 luakit.idle_add(function ()
                     if states[old] == s and not s.sleeping then unload(old, s) end
                 end)
@@ -353,7 +359,7 @@ end
 local function set_override(w, value)
     local view, s = w.view, states[w.view]
     if not s then return end
-    s.override, s.last_active = value, now()
+    s.override = value
     if value == "keep" then wake(view) end
     protect(view, s, reason(view, s))
     if not view.private then
@@ -361,7 +367,7 @@ local function set_override(w, value)
         if not ok then w:error("Override active, but session save failed: " .. tostring(err)); return end
     end
     local label = value == "keep" and "Keep loaded: on (yellow)" or
-        value == "unload" and "Unload eligible: on (gray-purple); safeguards bypassed" or
+        value == "unload" and "Unload eligible: on (purple); content protections off" or
         "Override: default; automatic safeguards restored"
     w:notify(label .. (view.private and " (private tab: memory only)" or " (saved in session)"))
 end
@@ -371,9 +377,17 @@ modes.add_cmds({
         local s = states[w.view]
         if s then set_override(w, s.override ~= "keep" and "keep" or nil) end
     end },
-    { ":allow-unload", "Toggle unload eligibility, bypassing safeguards.", function (w)
+    { ":allow-unload", "Toggle unload eligibility, ignoring content protections.", function (w)
         local s = states[w.view]
         if s then set_override(w, s.override ~= "unload" and "unload" or nil) end
+    end },
+    { ":unload-now", "Unload this tab as soon as it is not visible.", function (w)
+        local s = states[w.view]
+        if not s then return end
+        if s.sleeping then w:notify("Tab is already unloaded"); return end
+        s.now = true
+        refresh(w.view)
+        w:notify("Will unload as soon as you leave this tab")
     end },
     { ":unload-status", "Explain why this tab is kept loaded.", function (w)
         local s = states[w.view]
@@ -385,8 +399,9 @@ modes.add_cmds({
         end
         local memory = M.available and string.format("%.0f MiB free%s", M.available,
             M.pressure and ", memory pressure" or "") or "memory unknown"
-        w:notify(string.format("override: %s; %s; idle %d/%d min; tabs %d/%d; %s",
-            s.override or "default", s.sleeping and "unloaded" or reason(w.view, s) or
+        w:notify(string.format("override: %s%s; %s; idle %d/%d min; tabs %d/%d; %s",
+            s.override or "default", s.now and " + unload-now" or "",
+            s.sleeping and "unloaded" or reason(w.view, s) or
             (visible(w.view) and "visible" or "eligible"), idle,
             math.floor(setting("idle_timeout")), loaded, math.floor(setting("max_loaded")), memory))
     end },
@@ -422,7 +437,7 @@ local function check()
     local over_cap = max_loaded > 0 and loaded > max_loaded
     for _, c in ipairs(ranked(candidates())) do
         local view, s = c.view, c.s
-        local due = s.override == "unload"
+        local due = s.now
         if not due and t - (s.wakened_at or 0) >= grace then
             due = t - s.last_active >= idle_limit or M.pressure or over_cap
         end

@@ -7,8 +7,8 @@ let
       owner = "monadix";
       repo = "luakit";
       # sandbox-webprocess-broker
-      rev = "cc8ddff78bec2f61b8b13f630598c26231b96d2b";
-      hash = "sha256-KiCFmMNN7nCwydeYQvbsVI6MF8C2/TvuvE/9sGj/MAU=";
+      rev = "15782b5a40abeede6929e59ebcb6e9e53d52e6e6";
+      hash = "sha256-WQqDmcm8TKECvv2opBCJfTVNCuOw6fDqHWh9vPs4FN0=";
     };
     patches = (oldAttrs.patches or [ ]) ++ [
       ./patches/undoclose-tab-metadata.patch

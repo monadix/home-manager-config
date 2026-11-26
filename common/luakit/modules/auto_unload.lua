@@ -277,8 +277,9 @@ local function install_window(w, restored)
             protect(old, s, reason(old, s))
             -- Leave tab switching first; dropping a renderer mid-switch is
             -- not safe from inside the signal. Only an explicit ,U unloads
-            -- here; ,u still waits for the idle window.
-            if s.now and not visible(old) then
+            -- here; ,u still waits for the idle window. tabs:current() still
+            -- reports the old page inside this signal, so compare views.
+            if s.now and old ~= view then
                 luakit.idle_add(function ()
                     if states[old] == s and not s.sleeping then unload(old, s) end
                 end)
